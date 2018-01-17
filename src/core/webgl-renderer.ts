@@ -6,7 +6,7 @@ export class WebglRenderer {
   canvas: HTMLCanvasElement;
   gl: WebGLRenderingContext;
 
-  compileShader(gl: WebGLRenderingContext, shaderSource, shaderType) {
+  compileShader(gl: WebGLRenderingContext, shaderSource:string, shaderType:number) {
     var shader = gl.createShader(shaderType);
     gl.shaderSource(shader, shaderSource);
     gl.compileShader(shader);
@@ -16,7 +16,7 @@ export class WebglRenderer {
     return shader;
   }
 
-  createProgram(gl: WebGLRenderingContext, vertexShader, fragmentShader) {
+  createProgram(gl: WebGLRenderingContext, vertexShader: WebGLShader, fragmentShader: WebGLShader) {
     var program = gl.createProgram();
     gl.attachShader(program, vertexShader);
     gl.attachShader(program, fragmentShader);
@@ -56,5 +56,43 @@ export class WebglRenderer {
     tracerProgram.uFocalDistance = gl.getUniformLocation(tracerProgram, "uFocalDistance");
     gl.enableVertexAttribArray(tracerProgram.aPositionLocation);
   }
+
+  render() {
+  window.requestAnimationFrame(render);
+
+  // stats.begin();
+
+  fpsCamera.update(1.0, 0.1);
+
+  gl.useProgram(tracerProgram);
+  gl.uniform1f(tracerProgram.uSeedLocation, Math.random());
+  gl.uniform1f(tracerProgram.uTextureWeightLocation, sampleCount / ++sampleCount);
+  gl.uniform3fv(tracerProgram.uOriginLocation, camera.eye);
+  gl.uniformMatrix4fv(tracerProgram.uMatrixLocation, gl.FALSE, camera.matrix);
+  gl.uniform1i(tracerProgram.uSampleLocation, 0);
+  gl.uniform1i(tracerProgram.uTextureLocation, 1);
+  gl.uniform1f(tracerProgram.uFocalDistance, focalDistance);
+  gl.activeTexture(gl.TEXTURE0);
+  gl.bindTexture(gl.TEXTURE_2D, sceneTexture);
+  gl.activeTexture(gl.TEXTURE1);
+  gl.bindTexture(gl.TEXTURE_2D, textures[0]);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+  gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, textures[1], 0);
+  gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+  gl.vertexAttribPointer(tracerProgram.aPositionLocation, 2, gl.FLOAT, false, 0, 0);
+  gl.drawArrays(gl.TRIANGLES, 0, 6);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+  textures.reverse();
+
+  gl.useProgram(renderProgram);
+  gl.activeTexture(gl.TEXTURE0);
+  gl.bindTexture(gl.TEXTURE_2D, textures[0]);
+  gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+  gl.vertexAttribPointer(renderProgram.aPositionLocation, 2, gl.FLOAT, false, 0, 0);
+  gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+  // stats.end();
+}
 
 }
