@@ -1,6 +1,9 @@
 export class Camera {
   constructor(fieldOfView: number, aspectRatio: number, nearPlane: number, farPlane: number) {
-
+    this.fieldOfView = fieldOfView;
+    this.aspectRatio = aspectRatio;
+    this.nearPlane = nearPlane;
+    this.farPlane = farPlane;
   }
 
   //焦距
