@@ -1,3 +1,6 @@
+import { WebglRenderer } from "./webgl-renderer";
+import { CameraControler } from "./camera-controler";
+
 export class Camera {
   constructor(fieldOfView: number, aspectRatio: number, nearPlane: number, farPlane: number) {
     this.fieldOfView = fieldOfView;
@@ -5,6 +8,9 @@ export class Camera {
     this.nearPlane = nearPlane;
     this.farPlane = farPlane;
   }
+
+  renderer: WebglRenderer;
+  controler: CameraControler;
 
   //焦距
   fieldOfView = Math.PI / 4.0;

@@ -184,13 +184,14 @@ export class WebglRenderer {
   camera: Camera;
   addCamera(camera: Camera) {
     this.camera = camera;
+    this.camera.renderer = this;
+    this.camera.controler.renderer = this;
   }
 
 
   render() {
-    // fpsCamera.update(1.0, 0.1);
+    this.camera.controler.update(1.0, 0.1);
     window.requestAnimationFrame((this.render).bind(this));
-    // console.log(this.tracer_uTextureWeightLocation);
     this.gl.useProgram(this.tracerProgram);
     this.gl.uniform1f(this.tracer_uSeedLocation, Math.random());
     this.gl.uniform1f(this.tracer_uTextureWeightLocation, this.sampleCount / ++this.sampleCount);
