@@ -1,0 +1,448 @@
+a:hover,
+h1,
+h2,
+h3 {
+  color: #fff
+}
+
+#instructions,
+.download,
+.view {
+  border-radius: 20px;
+  border: 1px solid #3F3F3F
+}
+
+#footer,
+#stars,
+.project,
+h1 {
+  clear: both
+}
+
+#footer,
+#shader,
+.buttons {
+  text-align: center
+}
+
+body {
+  margin: 0;
+  font: 13px/18px 'Lucida Grande', Arial, sans-serif;
+  background: #1F1F1F;
+  color: #7F7F7F
+}
+
+.padded {
+  margin: auto;
+  padding: 0 35px;
+  max-width: 900px
+}
+
+h2 {
+  margin: 0;
+  float: left;
+  font: 700 italic 30px/100px Georgia, serif
+}
+
+#nav {
+  float: right;
+  font-size: 18px;
+  line-height: 100px
+}
+
+#nav a {
+  font-style: italic;
+  text-decoration: none;
+  font-family: Georgia, serif
+}
+
+#nav a.current,
+h2 a {
+  color: #fff;
+  text-decoration: none
+}
+
+#stars {
+  border-top: 1px solid #3F3F3F;
+  border-bottom: 1px solid #3F3F3F;
+  background: url(background.png)fixed #000;
+  margin-bottom: 50px
+}
+
+h1 {
+  margin: 0;
+  font: 700 italic 50px/60px Georgia, serif;
+  padding: 30px 0
+}
+
+.showbox,
+p,
+pre {
+  margin: 0 0 30px
+}
+
+p.indented {
+  margin-left: 30px
+}
+
+sup {
+  vertical-align: inherit;
+  position: relative;
+  top: -4px
+}
+
+a {
+  color: #BFBFBF
+}
+
+a:focus {
+  outline: 0
+}
+
+h3 {
+  margin: 50px 0 30px;
+  padding: 50px 0 0;
+  font: 700 italic 30px/30px Georgia, serif
+}
+
+.showbox {
+  padding: 10px;
+  height: 350px;
+  background: #4F4F4F;
+  border-radius: 20px
+}
+
+.showbox>div {
+  height: 350px;
+  border-radius: 14px
+}
+
+.showbox #diskitude {
+  background: url(diskitude.png)center no-repeat #fff
+}
+
+.showbox #soda {
+  background: url(soda.png)center #fff
+}
+
+.showbox #calendar {
+  background: url(calendar.png)center #fff
+}
+
+#instructions {
+  margin: 0 0 30px 30px;
+  padding: 0 30px;
+  float: right;
+  width: 27%
+}
+
+#instructions h3 {
+  padding: 0;
+  margin: 30px 0 15px;
+  line-height: 20px;
+  font-size: 20px
+}
+
+#instructions ul {
+  margin: 15px 0 30px;
+  padding: 0 0 0 15px
+}
+
+.download,
+.view {
+  margin: 0 auto;
+  line-height: 40px;
+  padding: 0 13px 0 15px;
+  display: inline-block;
+  text-decoration: none
+}
+
+.download:hover,
+.view:hover {
+  border: 1px solid #4F4F4F;
+  background: #272727;
+  background: -webkit-gradient(linear, left top, left bottom, from(#2F2F2F), to(#1F1F1F))
+}
+
+.download:active,
+.view:active {
+  border: 1px solid #3F3F3F;
+  background: #171717;
+  background: -webkit-gradient(linear, left top, left bottom, from(#000), to(#1F1F1F))
+}
+
+.download span,
+.view span {
+  width: 18px;
+  height: 40px;
+  margin-left: 10px;
+  display: inline-block;
+  vertical-align: bottom;
+  background: url(buttons.png)no-repeat
+}
+
+* html #download span,
+* html #view span,
+input[type=checkbox],
+input[type=radio] {
+  vertical-align: middle
+}
+
+.download:hover span {
+  background-position: 0 -40px
+}
+
+.view span {
+  background-position: 0 -80px
+}
+
+.view:hover span {
+  background-position: 0 -120px
+}
+
+.project {
+  margin: 80px 0;
+  padding: 0 0 0 360px
+}
+
+.project h3 {
+  padding: 0;
+  margin: 0 0 40px;
+  font-size: 40px;
+  line-height: 50px
+}
+
+.project .image {
+  padding: 0 0 80px;
+  margin-left: -360px;
+  float: left
+}
+
+.project .image>div {
+  padding: 10px;
+  background: #4F4F4F;
+  border-radius: 20px
+}
+
+.project .image>div>div {
+  width: 300px;
+  height: 300px;
+  border-radius: 14px;
+  background-size: contain
+}
+
+input[type=checkbox],
+input[type=radio] {
+  height: 15px;
+  background: #7F7F7F;
+  width: 15px
+}
+
+.project #diskitude {
+  background-image: url(diskitude.png)
+}
+
+.project #path-tracing {
+  background-image: url(webgl-path-tracing-thumb.png)
+}
+
+.project #rapt {
+  background-image: url(rapt-thumb.png)
+}
+
+.project #fsm {
+  background-image: url(fsm-thumb.png)
+}
+
+.project #dft {
+  background-image: url(dft-thumb.png)
+}
+
+.project #soda {
+  background-image: url(soda-thumb.png)
+}
+
+.project #calendar {
+  background-image: url(calendar-thumb.png)
+}
+
+.project #filter {
+  background-image: url(webgl-filter.jpg)
+}
+
+.project #water {
+  background-image: url(webgl-water-thumb.png)
+}
+
+.project #gps {
+  background-image: url(gps-thumb.png)
+}
+
+.project #obscure-cpp {
+  background-image: url(obscure-cpp-thumb.png)
+}
+
+.project #shaders-grid {
+  background-image: url(grid-thumb.png)
+}
+
+.project #shaders-curvature {
+  background-image: url(curvature-thumb.png)
+}
+
+.project #shaders-shadow {
+  background-image: url(rect-shadow-thumb.png)
+}
+
+.project #shaders,
+.project #shaders-lightmap {
+  background-image: url(lightmap-thumb.png)
+}
+
+#footer {
+  height: 150px;
+  color: #4F4F4F
+}
+
+pre {
+  color: #BFBFBF;
+  margin: 30px;
+  padding: 8px 10px;
+  white-space: pre-wrap;
+  background: #111;
+  border-radius: 5px
+}
+
+code,
+pre {
+  font: 12px Monaco, Consolas, Monospace
+}
+
+pre .comment,
+pre .comment .keyword,
+pre .comment .literal {
+  color: #666
+}
+
+pre .keyword {
+  color: #7F9FBF
+}
+
+pre .literal {
+  color: #BFBF7F
+}
+
+#shader {
+  margin-bottom: 40px;
+  max-width: 100%
+}
+
+#shader canvas {
+  max-width: 100%;
+  cursor: move
+}
+
+.indented label {
+  display: block
+}
+
+input[type=radio] {
+  -webkit-appearance: initial;
+  border-radius: 10px;
+  margin-right: 5px
+}
+
+input[type=radio]:checked {
+  background: #1F1F1F;
+  border: 4px solid #7F7F7F
+}
+
+input[type=checkbox]:focus,
+input[type=radio]:focus {
+  background: #FFF;
+  outline: 0
+}
+
+input[type=radio]:focus:checked {
+  background: #1F1F1F;
+  border: 4px solid #FFF
+}
+
+input[type=checkbox] {
+  -webkit-appearance: initial;
+  border-radius: 3px;
+  margin-right: 5px
+}
+
+input[type=checkbox]:checked:after {
+  position: relative;
+  top: 2px;
+  left: 1px;
+  content: '';
+  width: 10px;
+  height: 5px;
+  display: block;
+  border-left: 3px solid #1F1F1F;
+  border-bottom: 3px solid #1F1F1F;
+  -webkit-transform: rotate(-55deg);
+  -ms-transform: rotate(-55deg);
+  transform: rotate(-55deg)
+}
+
+@media (max-width:650px) {
+  #nav,
+  h1,
+  h2 {
+    text-align: center
+  }
+  h1 {
+    font-size: 30px;
+    line-height: 40px;
+    padding: 20px 0
+  }
+  h2 {
+    margin-top: 10px;
+    font-size: 20px
+  }
+  #nav,
+  h2 {
+    float: none;
+    line-height: 25px
+  }
+  h3 {
+    padding: 0;
+    font-size: 25px
+  }
+  #nav {
+    font-size: 15px;
+    margin-bottom: 10px
+  }
+  .project {
+    padding: 0;
+    margin: 0 0 100px
+  }
+  .project h3 {
+    font-size: 25px;
+    line-height: 30px;
+    margin-bottom: 30px
+  }
+  .project .image {
+    float: none;
+    margin: auto;
+    width: 100%;
+    max-width: 320px;
+    padding-bottom: 30px
+  }
+  .project .image>div>div {
+    padding-top: 100%;
+    width: 100%;
+    height: 0
+  }
+  #footer {
+    height: 0
+  }
+  pre {
+    margin: 30px 0;
+    font-size: 10px
+  }
+}
