@@ -19,8 +19,14 @@ window.onload = function () {
   let cameraControler = new CameraControler(camera);
   cameraControler.mount();
 
-  renderer.addCamera(camera);
-  renderer.render();
+  // renderer.addCamera(camera);
+  renderer.render(camera);
+
+  function animate() {
+    requestAnimationFrame(animate);
+    renderer.render(camera);
+  }
+  animate();
 }
 
 

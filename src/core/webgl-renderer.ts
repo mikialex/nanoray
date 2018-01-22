@@ -116,22 +116,17 @@ export class WebglRenderer {
   }
 
 
-  camera: Camera;
-  addCamera(camera: Camera) {
-    this.camera = camera;
-    this.camera.renderer = this;
-    this.camera.controler.renderer = this;
-  }
-
-
-  render() {
-    this.camera.controler.update(1.0, 0.1);
-    // window.requestAnimationFrame((this.render).bind(this));
+  render(camera: Camera) {
+    if (!camera.controler.renderer) {
+      console.log(camera.controler)
+      camera.controler.renderer = this;
+    }
+    camera.controler.update(1.0, 0.1);
     this.gl.useProgram(this.tracerProgram);
     this.gl.uniform1f(this.tracer_uSeedLocation, Math.random());
     this.gl.uniform1f(this.tracer_uTextureWeightLocation, this.sampleCount / ++this.sampleCount);
-    this.gl.uniform3fv(this.tracer_uOriginLocation, this.camera.eye);
-    this.gl.uniformMatrix4fv(this.tracer_uMatrixLocation, false, this.camera.matrix);
+    this.gl.uniform3fv(this.tracer_uOriginLocation, camera.eye);
+    this.gl.uniformMatrix4fv(this.tracer_uMatrixLocation, false, camera.matrix);
     this.gl.uniform1i(this.tracer_uSampleLocation, 0);
     this.gl.uniform1i(this.tracer_uTextureLocation, 1);
     this.gl.uniform1f(this.tracer_uFocalDistance, this.focalDistance);
@@ -154,7 +149,6 @@ export class WebglRenderer {
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vertexBuffer);
     this.gl.vertexAttribPointer(this.render_aPositionLocation, 2, this.gl.FLOAT, false, 0, 0);
     this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
-    window.requestAnimationFrame((this.render).bind(this));
 
     // stats.end();
   }
