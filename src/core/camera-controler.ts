@@ -117,6 +117,7 @@ export class CameraControler {
     this.camera.moveTo(x, y, z);
     this.camera.lookAt(x + this.lookX, y + this.lookY, z + this.lookZ);
     this.camera.update();
+    // console.log(this.camera)
   }
 
 
