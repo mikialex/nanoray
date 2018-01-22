@@ -47,6 +47,15 @@ Box getBox(int index) {
               texture2D(uSampler, vec2(u + u3, 0.0)).rgb);
 }
 
+
+// struct Trangle {
+//     vec3 p1;
+//     vec3 p2;
+//     vec3 p3;
+// }
+
+
+
 float rand() {
     seed += 0.1573519;
     return fract(sin(dot(gl_FragCoord.xy, vec2(12.9898 + seed, 78.2331 + seed))) * 43758.5453);
