@@ -7,6 +7,8 @@ const tracerFragmentShader = require('../shader/fragment/tracer.glsl');
 
 import {ars} from '../scene/box-scene'
 
+import { scene } from '../scene/box-scene-o'
+
 export class WebglRenderer {
   constructor() {
 
