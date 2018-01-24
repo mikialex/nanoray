@@ -7,7 +7,8 @@ const tracerFragmentShader = require('../shader/fragment/tracer.glsl');
 
 import {ars} from '../scene/box-scene'
 
-import { scene } from '../scene/box-scene-o'
+import { sceneJson } from '../scene/box-scene-o'
+import { Scene } from "./scene";
 
 export class WebglRenderer {
   constructor() {
@@ -111,8 +112,38 @@ export class WebglRenderer {
 
 
   load() {
-    var data = new Float32Array(ars);
-    this.sceneTexture = this.createTexture(this.gl, 256, 1, this.gl.RGBA, this.gl.FLOAT, data);
+    let scene = new Scene();
+    scene.parseSceneJson(sceneJson);
+    console.log(scene);
+    console.log('scene array data:', scene.toDataArray());
+    console.log(scene.dataLength);
+
+    //data length must >1024 ???  over 1024 is cutted
+    let d = scene.toDataArray();
+    let fill = 1024 - d.length;
+    if (d.length < 1024) {
+      for (let i = 0; i < fill; i++) {
+        d.push(0);
+      }
+    }
+    var data = new Float32Array(d);
+  
+    // const alignment = 1;
+    // this.gl.pixelStorei(this.gl.UNPACK_ALIGNMENT, alignment);
+    
+    this.sceneTexture = this.createTexture(this.gl,256, 1, this.gl.RGBA, this.gl.FLOAT, data);
+
+
+    // let d = ars;
+    // let fill = 1024 - d.length;
+    // if (d.length < 1024) {
+    //   for (let i = 0; i < fill; i++) {
+    //     d.push(0);
+    //   }
+    // }
+    // var data = new Float32Array(d);
+    // this.sceneTexture = this.createTexture(this.gl, 256, 1, this.gl.RGBA, this.gl.FLOAT, data);
+
     this.textures.push(this.createTexture(this.gl, this.canvas.width, this.canvas.height, this.gl.RGBA, this.gl.FLOAT, null));
     this.textures.push(this.createTexture(this.gl, this.canvas.width, this.canvas.height, this.gl.RGBA, this.gl.FLOAT, null));
   }

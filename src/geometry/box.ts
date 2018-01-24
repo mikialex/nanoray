@@ -9,7 +9,7 @@ export class BoxGeometry extends Geometry{
   }
   minPoint: Vector3;
   maxPoint: Vector3;
-  dataLength = 6;
+  dataLength = 8;
   type = 'box';
   geoId = 1;
 
@@ -19,8 +19,8 @@ export class BoxGeometry extends Geometry{
   }
 
   toArrayData() {
-    return [this.minPoint.x, this.minPoint.y, this.minPoint.z,
-      this.maxPoint.x, this.maxPoint.y, this.maxPoint.z,
+    return [this.minPoint.x, this.minPoint.y, this.minPoint.z,0,
+      this.maxPoint.x, this.maxPoint.y, this.maxPoint.z,0
     ]
   }
 

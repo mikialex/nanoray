@@ -16,12 +16,12 @@ export class SimpleMaterial extends Material{
     this.lightness = new Vector3(data.lightness[0], data.lightness[1], data.lightness[2]);
   }
 
-  dataLength = 6;
+  dataLength = 8;
   mateId = 1;
 
   toArrayData() {
-    return [this.color.x, this.color.y, this.color.z,
-      this.lightness.x, this.lightness.y, this.lightness.z,
+    return [this.color.x, this.color.y, this.color.z,0,
+      this.lightness.x, this.lightness.y, this.lightness.z,0
     ]
   }
 
