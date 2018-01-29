@@ -17,8 +17,8 @@ const float blurRadius = 0.01;
 
 uniform vec3 uOrigin;
 uniform mat4 uMatrix;
-uniform sampler2D uSampler;
 uniform sampler2D uTexture;
+uniform sampler2D uSampler;
 uniform float uSeed;
 uniform float uTextureWeight;
 uniform float uFocalDistance;

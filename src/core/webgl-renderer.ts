@@ -23,6 +23,7 @@ export class WebglRenderer {
   tracerProgram: WebGLProgram;
   renderProgram: WebGLProgram;
   sceneTexture: WebGLTexture;
+  sceneMapTexture: WebGLTexture;
   textures: Array<WebGLTexture> = [];
   sampleCount = 0;
   focalDistance = 2.0;
@@ -94,7 +95,7 @@ export class WebglRenderer {
     this.tracer_aPositionLocation = this.gl.getAttribLocation(this.tracerProgram, "aPosition");
     this.tracer_uSampleLocation = this.gl.getUniformLocation(this.tracerProgram, "uSampler");
     this.tracer_uTextureLocation = this.gl.getUniformLocation(this.tracerProgram, "uTexture");
-    this.tracer_uSeedLocation = this.gl.getUniformLocation(this.tracerProgram, "uSeed");
+    this.tracer_uSeedLocation = this.gl.getUniformLocation(this.tracerProgram, "uSeed"); // 随机数种子uniform
     this.tracer_uOriginLocation = this.gl.getUniformLocation(this.tracerProgram, "uOrigin");
     this.tracer_uMatrixLocation = this.gl.getUniformLocation(this.tracerProgram, "uMatrix");
     this.tracer_uTextureWeightLocation = this.gl.getUniformLocation(this.tracerProgram, "uTextureWeight");
@@ -130,8 +131,9 @@ export class WebglRenderer {
   
     // const alignment = 1;
     // this.gl.pixelStorei(this.gl.UNPACK_ALIGNMENT, alignment);
-    
-    this.sceneTexture = this.createTexture(this.gl,256, 1, this.gl.RGBA, this.gl.FLOAT, data);
+    // console.log(data.length / 4)
+    this.sceneTexture = this.createTexture(this.gl, data.length/4, 1, this.gl.RGBA, this.gl.FLOAT, data);
+    // this.sceneMapTexture= this.createTexture(this.gl,)
 
 
     // let d = ars;
@@ -155,30 +157,45 @@ export class WebglRenderer {
       camera.controler.renderer = this;
     }
     camera.controler.update(1.0, 0.1);
+
+    //运行光线跟踪着色器program
     this.gl.useProgram(this.tracerProgram);
-    this.gl.uniform1f(this.tracer_uSeedLocation, Math.random());
-    this.gl.uniform1f(this.tracer_uTextureWeightLocation, this.sampleCount / ++this.sampleCount);
-    this.gl.uniform3fv(this.tracer_uOriginLocation, camera.eye);
-    this.gl.uniformMatrix4fv(this.tracer_uMatrixLocation, false, camera.matrix);
-    this.gl.uniform1i(this.tracer_uSampleLocation, 0);
-    this.gl.uniform1i(this.tracer_uTextureLocation, 1);
-    this.gl.uniform1f(this.tracer_uFocalDistance, this.focalDistance);
+    this.gl.uniform1f(this.tracer_uSeedLocation, Math.random()); // 随机数种子
+    this.gl.uniform1f(this.tracer_uTextureWeightLocation, this.sampleCount / ++this.sampleCount);// 当前采样比重
+    this.gl.uniform3fv(this.tracer_uOriginLocation, camera.eye); //相机位置
+    this.gl.uniformMatrix4fv(this.tracer_uMatrixLocation, false, camera.matrix); //相机矩阵
+    this.gl.uniform1i(this.tracer_uSampleLocation, 0);  //绑定至 纹理0
+    this.gl.uniform1i(this.tracer_uTextureLocation, 1); //绑定至 纹理1
+    this.gl.uniform1f(this.tracer_uFocalDistance, this.focalDistance); //焦距
+
     this.gl.activeTexture(this.gl.TEXTURE0);
-    this.gl.bindTexture(this.gl.TEXTURE_2D, this.sceneTexture);
+    this.gl.bindTexture(this.gl.TEXTURE_2D, this.sceneTexture);//绑定场景到 0纹理
+
     this.gl.activeTexture(this.gl.TEXTURE1);
-    this.gl.bindTexture(this.gl.TEXTURE_2D, this.textures[0]);
-    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.framebuffer);
-    this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0, this.gl.TEXTURE_2D, this.textures[1], 0);
+    this.gl.bindTexture(this.gl.TEXTURE_2D, this.textures[0]);//绑定前一次trace结果（texture【2】）到 1纹理
+
+    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.framebuffer); //设置 片元着色器输出的帧缓存
+    // 将帧缓存绑定到纹理texture【1】
+    this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0, this.gl.TEXTURE_2D, this.textures[1], 0); 
+
+    // 指定覆盖屏幕的两个三角形
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vertexBuffer);
     this.gl.vertexAttribPointer(this.tracer_aPositionLocation, 2, this.gl.FLOAT, false, 0, 0);
+    //向帧缓存即纹理 draw 
     this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
-    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
 
+    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null); //解绑
+
+    //交换缓冲区 用以显示前一次光线跟踪的结果
     this.textures.reverse();
 
+    //运行绘制结果program
     this.gl.useProgram(this.renderProgram);
+    this.gl.uniform1i(this.render_uTextureLocation, 0);  //绑定至 纹理0
     this.gl.activeTexture(this.gl.TEXTURE0);
-    this.gl.bindTexture(this.gl.TEXTURE_2D, this.textures[0]);
+    this.gl.bindTexture(this.gl.TEXTURE_2D, this.textures[0]); //绑定上面光线跟踪的新结果到 纹理0
+
+    //向屏幕 draw 
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vertexBuffer);
     this.gl.vertexAttribPointer(this.render_aPositionLocation, 2, this.gl.FLOAT, false, 0, 0);
     this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);

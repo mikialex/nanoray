@@ -44,7 +44,7 @@ export class Scene{
   toDataMapArray() {
     let result:Array<number> = [];
     this.primitiveList.forEach(data =>{
-      result.concat([data.geometry.geoId,data.material.mateId])
+      result.concat([data.geometry.geoId, data.material.mateId]);
     })
     return result;
   }
