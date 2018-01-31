@@ -33,6 +33,7 @@ export class WebglRenderer {
   tracer_aPositionLocation: number;
   tracer_uSampleLocation: WebGLUniformLocation;
   tracer_uTextureLocation: WebGLUniformLocation;
+  tracer_uSceneMapLocation: WebGLUniformLocation;
   tracer_uSeedLocation: WebGLUniformLocation;
   tracer_uOriginLocation: WebGLUniformLocation;
   tracer_uMatrixLocation: WebGLUniformLocation;
@@ -95,6 +96,9 @@ export class WebglRenderer {
     this.tracer_aPositionLocation = this.gl.getAttribLocation(this.tracerProgram, "aPosition");
     this.tracer_uSampleLocation = this.gl.getUniformLocation(this.tracerProgram, "uSampler");
     this.tracer_uTextureLocation = this.gl.getUniformLocation(this.tracerProgram, "uTexture");
+
+    this.tracer_uSceneMapLocation = this.gl.getUniformLocation(this.tracerProgram, "uSceneMap");
+
     this.tracer_uSeedLocation = this.gl.getUniformLocation(this.tracerProgram, "uSeed"); // 随机数种子uniform
     this.tracer_uOriginLocation = this.gl.getUniformLocation(this.tracerProgram, "uOrigin");
     this.tracer_uMatrixLocation = this.gl.getUniformLocation(this.tracerProgram, "uMatrix");
@@ -135,6 +139,16 @@ export class WebglRenderer {
     this.sceneTexture = this.createTexture(this.gl, data.length/4, 1, this.gl.RGBA, this.gl.FLOAT, data);
     // this.sceneMapTexture= this.createTexture(this.gl,)
 
+    let d2 = scene.toDataMapArray();
+    let fill2 = 1024 - d2.length;
+    if (d2.length < 1024) {
+      for (let i = 0; i < fill2; i++) {
+        d2.push(0);
+      }
+    }
+    console.log(d2);
+    let mapData = new Float32Array(d2);
+    this.sceneMapTexture = this.createTexture(this.gl, 256, 1, this.gl.RGBA, this.gl.FLOAT, mapData);
 
     // let d = ars;
     // let fill = 1024 - d.length;
@@ -173,6 +187,9 @@ export class WebglRenderer {
 
     this.gl.activeTexture(this.gl.TEXTURE1);
     this.gl.bindTexture(this.gl.TEXTURE_2D, this.textures[0]);//绑定前一次trace结果（texture【2】）到 1纹理
+
+    this.gl.activeTexture(this.gl.TEXTURE2);
+    this.gl.bindTexture(this.gl.TEXTURE_2D, this.sceneMapTexture);//绑定前一次trace结果（texture【2】）到 1纹理
 
     this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.framebuffer); //设置 片元着色器输出的帧缓存
     // 将帧缓存绑定到纹理texture【1】
