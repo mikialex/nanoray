@@ -146,7 +146,7 @@ export class WebglRenderer {
         d2.push(0);
       }
     }
-    console.log(d2);
+    console.log('scene map texture data', d2); 
     let mapData = new Float32Array(d2);
     this.sceneMapTexture = this.createTexture(this.gl, 256, 1, this.gl.RGBA, this.gl.FLOAT, mapData);
 

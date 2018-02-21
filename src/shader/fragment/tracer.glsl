@@ -48,12 +48,40 @@ Box getBox(int index) {
               texture2D(uSampler, vec2(u + u3, 0.0)).rgb);
 }
 
+float Box_getIntersection(int index, vec3 origin, vec3 delta) {
+    Box box = getBox(index);
+    vec3 t0 = (box.min - origin) / delta;
+    vec3 t1 = (box.max - origin) / delta;
+    vec3 r0 = min(t0, t1);
+    vec3 r1 = max(t0, t1);
+    float tn = max(r0.x, max(r0.y, r0.z));
+    float tf = min(r1.x, min(r1.y, r1.z));
+    return (tn <= tf) && (tf > EPSILON) ? tn : POSITIVE_INFINITY;
+}
+
+vec3 Box_getPointNormal(int index, vec3 hit) {
+    Box box = getBox(index);
+    if (hit.x < box.min.x + EPSILON) return vec3(-1.0, 0.0, 0.0); else
+    if (hit.x > box.max.x - EPSILON) return vec3(1.0, 0.0, 0.0); else
+    if (hit.y < box.min.y + EPSILON) return vec3(0.0, -1.0, 0.0); else
+    if (hit.y > box.max.y - EPSILON) return vec3(0.0, 1.0, 0.0); else
+    if (hit.z < box.min.z + EPSILON) return vec3(0.0, 0.0, -1.0); else
+                                     return vec3(0.0, 0.0, 1.0);
+}
+
 
 // struct Trangle {
 //     vec3 p1;
 //     vec3 p2;
 //     vec3 p3;
 // }
+
+float general_getIntersection(int type, int index, vec3 origin, vec3 delta) {
+    if(type == 1){ //box
+        return Box_getIntersection(index, origin, delta);
+    }
+    return POSITIVE_INFINITY;
+}
 
 
 
@@ -76,34 +104,26 @@ vec3 cosineSampleHemisphere(vec3 normal) {
     return r3 * (u * cos(r1) + cross(normal, u) * sin(r1)) + normal * sqrt(1.0 - r2);
 }
 
-float intersectAABB(int index, vec3 origin, vec3 delta) {
-    Box box = getBox(index);
-    vec3 t0 = (box.min - origin) / delta;
-    vec3 t1 = (box.max - origin) / delta;
-    vec3 r0 = min(t0, t1);
-    vec3 r1 = max(t0, t1);
-    float tn = max(r0.x, max(r0.y, r0.z));
-    float tf = min(r1.x, min(r1.y, r1.z));
-    return (tn <= tf) && (tf > EPSILON) ? tn : POSITIVE_INFINITY;
-}
-
-vec3 normalForAABB(int index, vec3 hit) {
-    Box box = getBox(index);
-    if (hit.x < box.min.x + EPSILON) return vec3(-1.0, 0.0, 0.0); else
-    if (hit.x > box.max.x - EPSILON) return vec3(1.0, 0.0, 0.0); else
-    if (hit.y < box.min.y + EPSILON) return vec3(0.0, -1.0, 0.0); else
-    if (hit.y > box.max.y - EPSILON) return vec3(0.0, 1.0, 0.0); else
-    if (hit.z < box.min.z + EPSILON) return vec3(0.0, 0.0, -1.0); else
-                                    return vec3(0.0, 0.0, 1.0);
-}
 
 bool intersect(vec3 origin, vec3 delta, out vec3 position, out vec3 normal, out vec3 diffuse, out vec3 emittance) {
     float hitResult = 1.0;
     int hitIndex;
     float t;
 
-    for (int i = 0; i < 64; ++i) {
-        t = intersectAABB(i, origin, delta);
+    // for (int i = 0; i < 64; ++i) {
+    //     t = general_getIntersection(1 , i, origin, delta);
+    //     if (t < hitResult) {
+    //         hitResult = t;
+    //         hitIndex = i;
+    //     }
+    // }
+
+    for (int i = 0; i < 10; ++i) {
+        float u = float(i) * u3;
+        int geoId = int(texture2D(uSceneMap, vec2(u, 0.0)).r);
+        int matId = int(texture2D(uSceneMap, vec2(u, 0.0)).g);
+        int position = int(texture2D(uSceneMap, vec2(u, 0.0)).b);
+        t = general_getIntersection(1 , i, origin, delta);
         if (t < hitResult) {
             hitResult = t;
             hitIndex = i;
@@ -113,7 +133,7 @@ bool intersect(vec3 origin, vec3 delta, out vec3 position, out vec3 normal, out 
     if (hitResult < 1.0) {
         Box box = getBox(hitIndex);
         position = origin + delta * hitResult;
-        normal = normalForAABB(hitIndex, position);
+        normal = Box_getPointNormal(hitIndex, position);
         diffuse = box.rgb;
         emittance = box.lit;
         return true;
