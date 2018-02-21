@@ -42,9 +42,12 @@ export class Scene{
   }
 
   toDataMapArray() {
-    let result:Array<number> = [];
-    this.primitiveList.forEach(data =>{
-      result.concat([data.geometry.geoId, data.material.mateId]);
+    let result: Array<number> = [];
+    let dataAu: Array<number> = [];
+    this.primitiveList.forEach(data => {
+      result = result.concat([data.geometry.geoId, data.material.mateId, dataAu.length]);
+      dataAu = dataAu.concat(data.geometry.toArrayData())
+        .concat(data.material.toArrayData());
     })
     return result;
   }
