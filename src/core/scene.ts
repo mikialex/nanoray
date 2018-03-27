@@ -42,14 +42,14 @@ export class Scene{
     return result;
   }
 
-  toDataMapArray() {
-    let result: Array<number> = [];
-    let dataAu: Array<number> = [];
-    this.primitiveList.forEach(data => {
-      result = result.concat([data.geometry.geoId, data.material.mateId, dataAu.length]);
-      dataAu = dataAu.concat(data.geometry.toArrayData())
-        .concat(data.material.toArrayData());
-    })
-    return result;
-  }
+  // toDataMapArray() {
+  //   let result: Array<number> = [];
+  //   let dataAu: Array<number> = [];
+  //   this.primitiveList.forEach(data => {
+  //     result = result.concat([data.geometry.geoId, data.material.mateId, dataAu.length]);
+  //     dataAu = dataAu.concat(data.geometry.toArrayData())
+  //       .concat(data.material.toArrayData());
+  //   })
+  //   return result;
+  // }
 }

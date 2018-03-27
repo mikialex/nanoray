@@ -17,9 +17,9 @@ export class Triangle extends Geometry {
   geoId: 1;
 
   parseJson(data:any) {
-    this.p1 = data.x;
-    this.p2 = data.y;
-    this.p3 = data.z;
+    this.p1 = new Vector3(data.x[0], data.x[1], data.x[2]);
+    this.p2 = new Vector3(data.y[0], data.y[1], data.y[2]);
+    this.p3 = new Vector3(data.z[0], data.z[1], data.z[2]);
   }
 
   toArrayData() {
