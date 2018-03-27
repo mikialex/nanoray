@@ -8,6 +8,7 @@ const tracerFragmentShader = require('../shader/fragment/tracer.glsl');
 import {ars} from '../scene/box-scene'
 
 import { sceneJson } from '../scene/box-scene-o'
+import { triangleSceneJson } from '../scene/triangle-scene'
 import { Scene } from "./scene";
 
 export class WebglRenderer {
@@ -22,8 +23,11 @@ export class WebglRenderer {
   framebuffer: WebGLBuffer;
   tracerProgram: WebGLProgram;
   renderProgram: WebGLProgram;
+  
   sceneTexture: WebGLTexture;
   sceneMapTexture: WebGLTexture;
+  tranglesData:WebGLTexture;
+
   textures: Array<WebGLTexture> = [];
   sampleCount = 0;
   focalDistance = 2.0;
@@ -31,9 +35,12 @@ export class WebglRenderer {
   render_aPositionLocation: number;
   render_uTextureLocation: WebGLUniformLocation;
   tracer_aPositionLocation: number;
+
   tracer_uSampleLocation: WebGLUniformLocation;
   tracer_uTextureLocation: WebGLUniformLocation;
   tracer_uSceneMapLocation: WebGLUniformLocation;
+  tracer_trianglesDataLocatioin: WebGLUniformLocation;
+
   tracer_uSeedLocation: WebGLUniformLocation;
   tracer_uOriginLocation: WebGLUniformLocation;
   tracer_uMatrixLocation: WebGLUniformLocation;
@@ -98,6 +105,7 @@ export class WebglRenderer {
     this.tracer_uTextureLocation = this.gl.getUniformLocation(this.tracerProgram, "uTexture");
 
     this.tracer_uSceneMapLocation = this.gl.getUniformLocation(this.tracerProgram, "uSceneMap");
+    this.tracer_trianglesDataLocatioin = this.gl.getUniformLocation(this.tracerProgram, "trianglesData");
 
     this.tracer_uSeedLocation = this.gl.getUniformLocation(this.tracerProgram, "uSeed"); // 随机数种子uniform
     this.tracer_uOriginLocation = this.gl.getUniformLocation(this.tracerProgram, "uOrigin");
@@ -150,6 +158,9 @@ export class WebglRenderer {
     let mapData = new Float32Array(d2);
     this.sceneMapTexture = this.createTexture(this.gl, 256, 1, this.gl.RGBA, this.gl.FLOAT, mapData);
 
+
+    this.tranglesData = this.createTexture(this.gl, 256, 1, this.gl.RGBA, this.gl.FLOAT, mapData);
+
     // let d = ars;
     // let fill = 1024 - d.length;
     // if (d.length < 1024) {
@@ -172,6 +183,7 @@ export class WebglRenderer {
     }
     camera.controler.update(1.0, 0.1);
 
+
     //运行光线跟踪着色器program
     this.gl.useProgram(this.tracerProgram);
     this.gl.uniform1f(this.tracer_uSeedLocation, Math.random()); // 随机数种子
@@ -180,6 +192,7 @@ export class WebglRenderer {
     this.gl.uniformMatrix4fv(this.tracer_uMatrixLocation, false, camera.matrix); //相机矩阵
     this.gl.uniform1i(this.tracer_uSampleLocation, 0);  //绑定至 纹理0
     this.gl.uniform1i(this.tracer_uTextureLocation, 1); //绑定至 纹理1
+    this.gl.uniform1i(this.tracer_trianglesDataLocatioin, 2); //绑定至 纹理2
     this.gl.uniform1f(this.tracer_uFocalDistance, this.focalDistance); //焦距
 
     this.gl.activeTexture(this.gl.TEXTURE0);
@@ -190,6 +203,9 @@ export class WebglRenderer {
 
     this.gl.activeTexture(this.gl.TEXTURE2);
     this.gl.bindTexture(this.gl.TEXTURE_2D, this.sceneMapTexture);//绑定前一次trace结果（texture【2】）到 1纹理
+
+    this.gl.activeTexture(this.gl.TEXTURE3);
+    this.gl.bindTexture(this.gl.TEXTURE_2D, this.tranglesData);//绑定前一次trace结果（texture【2】）到 1纹理
 
     this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.framebuffer); //设置 片元着色器输出的帧缓存
     // 将帧缓存绑定到纹理texture【1】
@@ -203,8 +219,14 @@ export class WebglRenderer {
 
     this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null); //解绑
 
+
+
+
     //交换缓冲区 用以显示前一次光线跟踪的结果
     this.textures.reverse();
+
+
+
 
     //运行绘制结果program
     this.gl.useProgram(this.renderProgram);

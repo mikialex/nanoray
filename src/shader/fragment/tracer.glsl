@@ -19,6 +19,7 @@ uniform vec3 uOrigin;
 uniform mat4 uMatrix;
 uniform sampler2D uTexture;
 uniform sampler2D uSampler;
+uniform sampler2D trianglesData;
 uniform sampler2D uSceneMap;
 uniform float uSeed;
 uniform float uTextureWeight;
@@ -141,6 +142,10 @@ bool intersect(vec3 origin, vec3 delta, out vec3 position, out vec3 normal, out 
         return false;
     }
 }
+
+
+
+
 
 void main(void) {
     vec4 worldir = uMatrix * vec4(2.0 * (gl_FragCoord.xy + rand2()) / vec2(width, height) - 1.0, 1.0, 1.0);
