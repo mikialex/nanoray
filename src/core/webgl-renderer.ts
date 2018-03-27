@@ -126,7 +126,7 @@ export class WebglRenderer {
 
   load() {
     let scene = new Scene();
-    scene.parseSceneJson(sceneJson);
+    scene.parseSceneJson(triangleSceneJson);
     console.log(scene);
     console.log('scene array data:', scene.toDataArray());
     console.log(scene.dataLength);

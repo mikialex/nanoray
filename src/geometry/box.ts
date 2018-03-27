@@ -11,7 +11,7 @@ export class BoxGeometry extends Geometry{
   maxPoint: Vector3;
   dataLength = 8;
   type = 'box';
-  geoId = 1;
+  geoId = 0;
 
   parseJson(data: any) {
     this.minPoint = new Vector3(data.min[0], data.min[1], data.min[2]);

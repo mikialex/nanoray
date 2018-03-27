@@ -1,6 +1,7 @@
 import { Primitive } from "./primitive";
 import { BoxGeometry } from "../geometry/box";
 import { SimpleMaterial } from "../material/simple";
+import { Triangle } from "../geometry/triangle";
 
 export class Scene{
   constructor() {
@@ -23,7 +24,7 @@ export class Scene{
 
   parseSceneJson(data:any) {
     data.forEach((item: any) => {
-      let geo = new BoxGeometry();
+      let geo = new Triangle();
       geo.parseJson(item.geo);
       let mate = new SimpleMaterial();
       mate.parseJson(item.mate);
