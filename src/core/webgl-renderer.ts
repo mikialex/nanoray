@@ -53,7 +53,7 @@ export class WebglRenderer {
   positionAttRender
   positionAttTrace
 
-   // sample result
+  // sample result
   uTextureRender
   uTextureTrace
 
@@ -62,8 +62,8 @@ export class WebglRenderer {
 
   uSeed
   uOrigin
-  uMatrix 
-  uTextureWeight 
+  uMatrix
+  uTextureWeight
   uFocalDistance
 
   prepare() {
@@ -89,6 +89,7 @@ export class WebglRenderer {
       if (row.length > 1) {
         if (row[0] === 'v') {
           let temp = row.split(' ');
+          console.log(temp);
           vertice.push(new Vector3(Number(temp[1]), Number(temp[2]), Number(temp[3])));
         } else if (row[0] === 'f') {
           let temp = row.split(' ');
@@ -106,17 +107,29 @@ export class WebglRenderer {
     console.log(triangles);
 
     let dataArray = [];
-    triangles.forEach((triangle,index) => {
-      if (index < 20) {
-        dataArray = dataArray.concat([
-          vertice[triangle.x - 1].x, vertice[triangle.x - 1].y, vertice[triangle.x - 1].z, 0,
-          vertice[triangle.y - 1].x, vertice[triangle.y - 1].y, vertice[triangle.y - 1].z, 0,
-          vertice[triangle.z - 1].x, vertice[triangle.z - 1].y, vertice[triangle.z - 1].z, 0,
-          0.8, 0.6, 1, 0,
-          0, 0, 0, 0
-        ])
-      }
+    triangles.forEach((triangle, index) => {
+      // if (index < 20) {
+      dataArray = dataArray.concat([
+        vertice[triangle.x - 1].x, vertice[triangle.x - 1].y, vertice[triangle.x - 1].z, 0,
+        vertice[triangle.y - 1].x, vertice[triangle.y - 1].y, vertice[triangle.y - 1].z, 0,
+        vertice[triangle.z - 1].x, vertice[triangle.z - 1].y, vertice[triangle.z - 1].z, 0,
+        Math.random(), 0.6, 1, 0,
+      ])
+
+      // if (Math.random() > 0.9) {
+      //   dataArray = dataArray.concat([1,1,1,1]);
+      // } else {
+        dataArray = dataArray.concat([0,0,0,0]);
+      // }
+      // }
     });
+    dataArray = dataArray.concat([
+      100, 0, 0, 0,
+      0, 100, 0, 0,
+      0, 0, 100, 0,
+      1, 1, 1, 1,
+      1,1,1,1
+    ]);
     console.log(dataArray);
     var data = new Float32Array(dataArray);
     console.log(data);
@@ -135,8 +148,7 @@ export class WebglRenderer {
     let traceVertexS = new GLShader(this);
     traceVertexS.compileRawShader(tracerVertexShader, ShaderType.vertex);
     let traceFragmentS = new GLShader(this);
-    tracerFragmentShader = tracerFragmentShader.replace(/{#triangleNumber#}/g, triangle/5);
-    console.log(tracerFragmentShader);
+    tracerFragmentShader = tracerFragmentShader.replace(/{#triangleNumber#}/g, triangle / 5);
     traceFragmentS.compileRawShader(tracerFragmentShader, ShaderType.fragment);
     this.traceProgram = new GLProgram(this, traceVertexS, traceFragmentS);
 
@@ -195,7 +207,7 @@ export class WebglRenderer {
     this.uTextureTrace.setData(0, DataType.uniform1i);
     this.utrianglesData.setData(1, DataType.uniform1i);
     // this.uTextureRender.setData(1, DataType.uniform1i);
-    
+
 
     this.gl.activeTexture(this.gl.TEXTURE0);
     this.gl.bindTexture(this.gl.TEXTURE_2D, this.textures[0]);

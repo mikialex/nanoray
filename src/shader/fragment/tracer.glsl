@@ -10,7 +10,7 @@ precision highp int;
 
 const float POSITIVE_INFINITY = 1.0 / EPSILON;
 
-const vec3 bgcolor = vec3(0.8, 0.8, 0.7);
+const vec3 bgcolor = vec3(0.8, 0.7, 0.6);
 const float width = 1280.0;
 const float height = 692.0;
 const float blurRadius = 0.01;
@@ -67,6 +67,30 @@ float seed = uSeed;
 //     if (hit.z < box.min.z + EPSILON) return vec3(0.0, 0.0, -1.0); else
 //                                      return vec3(0.0, 0.0, 1.0);
 // }
+
+
+
+float rand() {
+    seed += 0.1573519;
+    return fract(sin(dot(gl_FragCoord.xy, vec2(12.9898 + seed, 78.2331 + seed))) * 43758.5453);
+}
+
+vec2 rand2() {
+    seed += 0.3973519;
+    return vec2(fract(sin(dot(gl_FragCoord.xy, vec2(12.9898 + seed, 78.2331 + seed))) * 43758.5453),
+                fract(cos(dot(gl_FragCoord.yx, vec2(63.7264 + seed, 10.8731 + seed))) * 43758.5453));
+}
+
+vec3 cosineSampleHemisphere(vec3 normal) {
+    float r1 = rand() * 6.283185307179586;
+    float r2 = rand();
+    float r3 = sqrt(r2);
+    vec3 u = normalize((abs(normal.x) > 0.1) ? vec3(normal.z, 0.0, -normal.x) : vec3(0.0, -normal.z, normal.y));
+    return r3 * (u * cos(r1) + cross(normal, u) * sin(r1)) + normal * sqrt(1.0 - r2);
+}
+
+
+
 const float triNum = {#triangleNumber#}.0;
 const float sep =triNum * 5.0 - 0.001;
 const float u1 = 1.0 / sep;
@@ -94,34 +118,83 @@ Triangle getTriangle(int index) {
                     );
 }
 
-float triangle_getIntersection(int index, vec3 origin, vec3 delta) {
-    Triangle triangle = getTriangle(index);
+// float triangle_getIntersection(int index, vec3 origin, vec3 delta) {
+//     Triangle triangle = getTriangle(index);
 
-    vec3 P = cross(delta, triangle.p2);
-    float det = dot(triangle.p1, P);
-    if (det > -EPSILON) // 光线若与三角形一边平行，则不会相交
-    return POSITIVE_INFINITY;
+//     vec3 P = cross(delta, triangle.p2);
+//     float det = dot(triangle.p1, P);
+//     if (det > -EPSILON) // 光线若与三角形一边平行，则不会相交
+//     return POSITIVE_INFINITY;
 
-    vec3 T = origin - triangle.p3;
-    float invdet = 1.0 / det;
-    float u = dot(T, P) * invdet;
-    if (u < 0.0 || u > 1.0)
-    return POSITIVE_INFINITY;
+//     vec3 T = origin - triangle.p3;
+//     float invdet = 1.0 / det;
+//     float u = dot(T, P) * invdet;
+//     if (u < 0.0 || u > 1.0)
+//     return POSITIVE_INFINITY;
 
 
-    vec3 Q = cross(T, triangle.p1);
-    float v = dot(delta, Q) * invdet;
-    if (v < 0.0 || u + v > 1.0)
-    return POSITIVE_INFINITY;
+//     vec3 Q = cross(T, triangle.p1);
+//     float v = dot(delta, Q) * invdet;
+//     if (v < 0.0 || u + v > 1.0)
+//     return POSITIVE_INFINITY;
 
-    float t = dot(triangle.p2, Q) * invdet; // t 相交距离
-    return t;
-    //   if (t > EPSILON && t < mint){  // 找到相交最近距离的三角形
-    //     mint = t;
-    //     minuv = vec2(u, v);
-    //   }
+//     float t = dot(triangle.p2, Q) * invdet; // t 相交距离
+//     return t;
+//     //   if (t > EPSILON && t < mint){  // 找到相交最近距离的三角形
+//     //     mint = t;
+//     //     minuv = vec2(u, v);
+//     //   }
    
 
+// }
+// float float triangle_getIntersection(int index, vec3 origin, vec3 delta) {
+float triangle_getIntersection( int index, vec3 orig, vec3 dir)
+{
+    Triangle triangle = getTriangle(index);
+    const float INFINITY = 1e10;
+    vec3 u, v, n; // triangle vectors
+    vec3 w0, w;  // ray vectors
+    float r, a, b; // params to calc ray-plane intersect
+
+    // get triangle edge vectors and plane normal
+    u = triangle.p2 - triangle.p1;
+    v = triangle.p3 - triangle.p1;
+    n = cross(u, v);
+
+    w0 = orig - triangle.p1;
+    a = -dot(n, w0);
+    b = dot(n, dir);
+    if (abs(b) < 1e-5)
+    {
+        // ray is parallel to triangle plane, and thus can never intersect.
+        return INFINITY;
+    }
+
+    // get intersect point of ray with triangle plane
+    r = a / b;
+    if (r < 0.0)
+        return INFINITY; // ray goes away from triangle.
+
+    vec3 I = orig + r * dir;
+    float uu, uv, vv, wu, wv, D;
+    uu = dot(u, u);
+    uv = dot(u, v);
+    vv = dot(v, v);
+    w = I - triangle.p1;
+    wu = dot(w, u);
+    wv = dot(w, v);
+    D = uv * uv - uu * vv;
+
+    // get and test parametric coords
+    float s, t;
+    s = (uv * wv - vv * wu) / D;
+    if (s < 0.0 || s > 1.0)
+        return INFINITY;
+    t = (uv * wu - uu * wv) / D;
+    if (t < 0.0 || (s + t) > 1.0)
+        return INFINITY;
+
+    return (r > 1e-5) ? r : INFINITY;
 }
 
 vec3 triangle_getPointNormal(int index, vec3 hit) {
@@ -134,30 +207,6 @@ vec3 triangle_getPointNormal(int index, vec3 hit) {
     
 }
 
-
-
-
-
-
-
-float rand() {
-    seed += 0.1573519;
-    return fract(sin(dot(gl_FragCoord.xy, vec2(12.9898 + seed, 78.2331 + seed))) * 43758.5453);
-}
-
-vec2 rand2() {
-    seed += 0.3973519;
-    return vec2(fract(sin(dot(gl_FragCoord.xy, vec2(12.9898 + seed, 78.2331 + seed))) * 43758.5453),
-                fract(cos(dot(gl_FragCoord.yx, vec2(63.7264 + seed, 10.8731 + seed))) * 43758.5453));
-}
-
-vec3 cosineSampleHemisphere(vec3 normal) {
-    float r1 = rand() * 6.283185307179586;
-    float r2 = rand();
-    float r3 = sqrt(r2);
-    vec3 u = normalize((abs(normal.x) > 0.1) ? vec3(normal.z, 0.0, -normal.x) : vec3(0.0, -normal.z, normal.y));
-    return r3 * (u * cos(r1) + cross(normal, u) * sin(r1)) + normal * sqrt(1.0 - r2);
-}
 
 
 bool intersect(
@@ -175,6 +224,19 @@ bool intersect(
     float t;
 
     debug=vec3(0,0,0);
+
+
+    // triangle_getIntersection(origin,delta)
+    //  for (int i = 0; i < {#triangleNumber#}; ++i) {
+    //      Triangle triangle = getTriangle(index);
+    //      triangle_getIntersection(origin,delta, )
+
+    //     // t = triangle_getIntersection( i, origin, delta);
+    //     // if (t < hitResult) {
+    //     //     hitResult = t;
+    //     //     hitIndex = i;
+    //     // }
+    // }
 
 
     for (int i = 0; i < {#triangleNumber#}; ++i) {
@@ -222,7 +284,7 @@ void main(void) {
     vec3 position, normal, diffuse, emittance;
     vec3 debug=vec3(0.0, 0.0, 0.0);
 
-    for (int depth = 0; depth < {#triangleNumber#}; ++depth) {
+    for (int depth = 0; depth < 5; ++depth) {
         if (intersect(origin, delta, position, normal, diffuse, emittance, debug)) {
             if (depth == 0) {
               dist = length(position - origin);
@@ -242,9 +304,9 @@ void main(void) {
     }
     gl_FragColor = vec4(mix(color, texture2D(uTexture, vTexCoords).rgb, uTextureWeight), dist);
 
-    // intersect(origin, delta, position, normal, diffuse, emittance,debug );
-    // Triangle triangle = getTriangle(1);
-    // debug=triangle.p2;
+    // float testT = triangle_getIntersection(0,vec3(0.25,0.25,1),vec3(0,-1,0));
+    // Triangle triangle = getTriangle(0);
+    // debug=vec3(testT/ 100000.0,testT,testT);
     // color = debug;
     // gl_FragColor = vec4(color.rgb, 1);
 

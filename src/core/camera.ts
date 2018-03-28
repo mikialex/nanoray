@@ -39,6 +39,10 @@ export class Camera {
   }
 
   update() {
+    document.querySelector('#camera').innerHTML =
+      `camera position: ${this.eye[0]} , ${this.eye[1]}, ${this.eye[2]}<br>
+      look at :  ${this.center[0]} , ${this.center[1]}, ${this.center[2]}
+      `
     var tan = Math.tan(this.fieldOfView / 2.0);
     var nf = (this.nearPlane - this.farPlane) / (2.0 * this.farPlane * this.nearPlane);
     var fn = (this.farPlane + this.nearPlane) / (2.0 * this.farPlane * this.nearPlane);
