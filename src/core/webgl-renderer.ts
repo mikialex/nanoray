@@ -1,144 +1,177 @@
 import { Camera } from "./camera";
 declare var require: any;
-const renderVertexShader = require('../shader/vertex/render.glsl');
-const renderFragmenShader = require('../shader/fragment/render.glsl');
-const tracerVertexShader = require('../shader/vertex/tracer.glsl');
-const tracerFragmentShader = require('../shader/fragment/tracer.glsl');
+let renderVertexShader = require('../shader/vertex/render.glsl');
+let renderFragmenShader = require('../shader/fragment/render.glsl');
+let tracerVertexShader = require('../shader/vertex/tracer.glsl');
+let tracerFragmentShader = require('../shader/fragment/tracer.glsl');
 
 
 import { sceneJson } from '../scene/box-scene-o'
 import { triangleSceneJson } from '../scene/triangle-scene'
 import { Scene } from "./scene";
 
+import { test } from '../loader/test-obj';
+import { Vector3 } from "../math/vector3";
+import { GLProgram } from "./webgl-program";
+import { GLAttribute } from "./webgl-attribute";
+import { GLUniform, DataType } from "./webgl-uniform";
+import { GLShader, ShaderType } from "./webgl-shader";
+import { createTexture } from "./webgl-texture";
+
+
+
+
+
 export class WebglRenderer {
-  constructor() {
-
-  }
-
-  canvas: HTMLCanvasElement;
-  gl: WebGLRenderingContext;
-
-  vertexBuffer: WebGLBuffer;
-  framebuffer: WebGLBuffer;
-  tracerProgram: WebGLProgram;
-  renderProgram: WebGLProgram;
-  
-  trianglesData:WebGLTexture;
-
-  textures: Array<WebGLTexture> = [];
-  sampleCount = 0;
-  focalDistance = 2.0;
-
-  render_aPositionLocation: number;
-  render_uTextureLocation: WebGLUniformLocation;
-  tracer_aPositionLocation: number;
-
-  tracer_uTextureLocation: WebGLUniformLocation;
-  tracer_trianglesDataLocation: WebGLUniformLocation;
-
-  tracer_uSeedLocation: WebGLUniformLocation;
-  tracer_uOriginLocation: WebGLUniformLocation;
-  tracer_uMatrixLocation: WebGLUniformLocation;
-  tracer_uTextureWeightLocation: WebGLUniformLocation;
-  tracer_uFocalDistance: WebGLUniformLocation;
-
-  compileShader(gl: WebGLRenderingContext, shaderSource: string, shaderType: number) {
-    var shader = gl.createShader(shaderType);
-    gl.shaderSource(shader, shaderSource);
-    gl.compileShader(shader);
-    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-      throw "Shader compilation failed:" + gl.getShaderInfoLog(shader);
-    }
-    return shader;
-  }
-
-  createProgram(gl: WebGLRenderingContext, vertexShader: WebGLShader, fragmentShader: WebGLShader) {
-    var program = gl.createProgram();
-    gl.attachShader(program, vertexShader);
-    gl.attachShader(program, fragmentShader);
-    gl.linkProgram(program);
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-      throw ("Program linking failed:" + gl.getProgramInfoLog(program));
-    }
-    return program;
-  }
-
-  createProgramFromScripts(gl: WebGLRenderingContext, vertexShaderStr: string, fragmentShaderStr: string) {
-    var vs = this.compileShader(gl, vertexShaderStr, gl.VERTEX_SHADER);
-    var fs = this.compileShader(gl, fragmentShaderStr, gl.FRAGMENT_SHADER);
-    return this.createProgram(gl, vs, fs);
-  }
-
-  createTexture(gl: WebGLRenderingContext, width: number, height: number, format: number, type: number, data: ArrayBufferView) {
-    var texture = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, texture);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-    gl.texImage2D(gl.TEXTURE_2D, 0, format, width, height, 0, format, type, data);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.bindTexture(gl.TEXTURE_2D, null);
-    return texture;
-  }
-
-  initGL(canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
     this.gl = this.canvas.getContext('webgl');
 
     //https://developer.mozilla.org/en-US/docs/Web/API/OES_texture_float
     this.gl.getExtension('OES_texture_float');
     this.gl.viewport(0, 0, this.gl.drawingBufferWidth, this.gl.drawingBufferHeight);
+  }
 
-    this.renderProgram = this.createProgramFromScripts(this.gl, renderVertexShader, renderFragmenShader);
-    this.render_aPositionLocation = this.gl.getAttribLocation(this.renderProgram, "aPosition");
-    this.render_uTextureLocation = this.gl.getUniformLocation(this.renderProgram, "uTexture");
-    this.gl.enableVertexAttribArray(this.render_aPositionLocation);
+  canvas: HTMLCanvasElement;
+  gl: WebGLRenderingContext;
 
-    this.tracerProgram = this.createProgramFromScripts(this.gl, tracerVertexShader, tracerFragmentShader);
-    this.tracer_aPositionLocation = this.gl.getAttribLocation(this.tracerProgram, "aPosition");
+  program: GLProgram[] = [];
+  attributes: GLAttribute[] = [];
+  uniforms: GLUniform[] = [];
 
-    this.tracer_uTextureLocation = this.gl.getUniformLocation(this.tracerProgram, "uTexture");
-    this.tracer_trianglesDataLocation = this.gl.getUniformLocation(this.tracerProgram, "trianglesData");
+  renderProgram: GLProgram;
+  traceProgram: GLProgram;
 
-    this.tracer_uSeedLocation = this.gl.getUniformLocation(this.tracerProgram, "uSeed"); // 随机数种子uniform
-    this.tracer_uOriginLocation = this.gl.getUniformLocation(this.tracerProgram, "uOrigin");
-    this.tracer_uMatrixLocation = this.gl.getUniformLocation(this.tracerProgram, "uMatrix");
-    this.tracer_uTextureWeightLocation = this.gl.getUniformLocation(this.tracerProgram, "uTextureWeight");
-    this.tracer_uFocalDistance = this.gl.getUniformLocation(this.tracerProgram, "uFocalDistance");
-    this.gl.enableVertexAttribArray(this.tracer_aPositionLocation);
+  framebuffer: WebGLBuffer;
+
+
+  textures: WebGLTexture[] = [];
+  sampleCount = 0;
+  focalDistance = 2.0;
+
+  // attribute
+  positionAttRender
+  positionAttTrace
+
+   // sample result
+  uTextureRender
+  uTextureTrace
+
+  trianglesData
+  utrianglesData
+
+  uSeed
+  uOrigin
+  uMatrix 
+  uTextureWeight 
+  uFocalDistance
+
+  prepare() {
+    let triangle;
+
+
+    // let scene = new Scene();
+    // scene.parseSceneJson(triangleSceneJson);
+    // console.log(scene);
+    // console.log('scene array data:', scene.toDataArray());
+    // console.log(scene.dataLength);
+
+    // let d = scene.toDataArray();
+    // var data = new Float32Array(d);
+    // console.log(data);
+    // triangle = d.length / 4;
+    // this.trianglesData = createTexture(this.gl, triangle, 1, this.gl.RGBA, this.gl.FLOAT, data);
+
+    const rows = test.split('\n');
+    const vertice = [];
+    const triangles = [];
+    rows.forEach(row => {
+      if (row.length > 1) {
+        if (row[0] === 'v') {
+          let temp = row.split(' ');
+          vertice.push(new Vector3(Number(temp[1]), Number(temp[2]), Number(temp[3])));
+        } else if (row[0] === 'f') {
+          let temp = row.split(' ');
+          temp = temp.slice(1, temp.length);
+          if (temp.length === 3) {
+            triangles.push(new Vector3(Number(temp[0]), Number(temp[1]), Number(temp[2])));
+          } else {
+            triangles.push(new Vector3(Number(temp[0]), Number(temp[1]), Number(temp[2])));
+            triangles.push(new Vector3(Number(temp[0]), Number(temp[2]), Number(temp[3])));
+          }
+        }
+      }
+    });
+    console.log(vertice);
+    console.log(triangles);
+
+    let dataArray = [];
+    triangles.forEach((triangle,index) => {
+      if (index < 20) {
+        dataArray = dataArray.concat([
+          vertice[triangle.x - 1].x, vertice[triangle.x - 1].y, vertice[triangle.x - 1].z, 0,
+          vertice[triangle.y - 1].x, vertice[triangle.y - 1].y, vertice[triangle.y - 1].z, 0,
+          vertice[triangle.z - 1].x, vertice[triangle.z - 1].y, vertice[triangle.z - 1].z, 0,
+          0.8, 0.6, 1, 0,
+          0, 0, 0, 0
+        ])
+      }
+    });
+    console.log(dataArray);
+    var data = new Float32Array(dataArray);
+    console.log(data);
+    triangle = dataArray.length / 4
+    this.trianglesData = createTexture(this.gl, triangle, 1, this.gl.RGBA, this.gl.FLOAT, data);
+
+
+
+    let renderVertexS = new GLShader(this);
+    renderVertexS.compileRawShader(renderVertexShader, ShaderType.vertex);
+    let renderFragmentS = new GLShader(this);
+    renderFragmentS.compileRawShader(renderFragmenShader, ShaderType.fragment);
+    this.renderProgram = new GLProgram(this, renderVertexS, renderFragmentS);
+
+
+    let traceVertexS = new GLShader(this);
+    traceVertexS.compileRawShader(tracerVertexShader, ShaderType.vertex);
+    let traceFragmentS = new GLShader(this);
+    tracerFragmentShader = tracerFragmentShader.replace(/{#triangleNumber#}/g, triangle/5);
+    console.log(tracerFragmentShader);
+    traceFragmentS.compileRawShader(tracerFragmentShader, ShaderType.fragment);
+    this.traceProgram = new GLProgram(this, traceVertexS, traceFragmentS);
+
+
+    this.positionAttRender = new GLAttribute(this, 'aPosition', this.renderProgram);
+    this.positionAttTrace = new GLAttribute(this, 'aPosition', this.traceProgram);
+    this.positionAttRender.setData(
+      new Float32Array([-1.0, -1.0, 1.0, -1.0, -1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0]), 2
+    )
+    this.positionAttTrace.setData(
+      new Float32Array([-1.0, -1.0, 1.0, -1.0, -1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0]), 2
+    )
+
+
+    this.uTextureRender = new GLUniform(this, 'uTexture', this.renderProgram);
+    this.uTextureTrace = new GLUniform(this, 'uTexture', this.traceProgram);
+
+
+    this.utrianglesData = new GLUniform(this, 'trianglesData', this.traceProgram);
+    this.uSeed = new GLUniform(this, 'uSeed', this.traceProgram);
+    this.uOrigin = new GLUniform(this, 'uOrigin', this.traceProgram);
+    this.uMatrix = new GLUniform(this, 'uMatrix', this.traceProgram);
+    this.uTextureWeight = new GLUniform(this, 'uTextureWeight', this.traceProgram);
+    this.uFocalDistance = new GLUniform(this, 'uFocalDistance', this.traceProgram);
 
     this.framebuffer = this.gl.createFramebuffer();
 
-    this.vertexBuffer = this.gl.createBuffer();
-    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vertexBuffer);
-    this.gl.bufferData(this.gl.ARRAY_BUFFER,
-      new Float32Array([-1.0, -1.0, 1.0, -1.0, -1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0]), this.gl.STATIC_DRAW);
-    this.load();
+    this.textures.push(createTexture(this.gl, this.canvas.width, this.canvas.height, this.gl.RGBA, this.gl.FLOAT, null));
+    this.textures.push(createTexture(this.gl, this.canvas.width, this.canvas.height, this.gl.RGBA, this.gl.FLOAT, null));
   }
 
 
-  load() {
-    let scene = new Scene();
-    scene.parseSceneJson(triangleSceneJson);
-    console.log(scene);
-    console.log('scene array data:', scene.toDataArray());
-    console.log(scene.dataLength);
 
-    //data length must >1024 ???  over 1024 is cutted
-    let d = scene.toDataArray();
-    // let fill = 1024 - d.length;
-    // if (d.length < 1024) {
-    //   for (let i = 0; i < fill; i++) {
-    //     d.push(0);
-    //   }
-    // }
-    var data = new Float32Array(d);
-    console.log(data);
-    this.trianglesData = this.createTexture(this.gl, d.length/4, 1, this.gl.RGBA, this.gl.FLOAT, data);
 
-    this.textures.push(this.createTexture(this.gl, this.canvas.width, this.canvas.height, this.gl.RGBA, this.gl.FLOAT, null));
-    this.textures.push(this.createTexture(this.gl, this.canvas.width, this.canvas.height, this.gl.RGBA, this.gl.FLOAT, null));
-  }
+
 
 
   render(camera: Camera) {
@@ -150,15 +183,19 @@ export class WebglRenderer {
 
 
     //运行光线跟踪着色器program
-    this.gl.useProgram(this.tracerProgram);
-    this.gl.uniform1f(this.tracer_uSeedLocation, Math.random()); // 随机数种子
-    this.gl.uniform1f(this.tracer_uTextureWeightLocation, this.sampleCount / ++this.sampleCount);// 当前采样比重
-    this.gl.uniform3fv(this.tracer_uOriginLocation, camera.eye); //相机位置
-    this.gl.uniformMatrix4fv(this.tracer_uMatrixLocation, false, camera.matrix); //相机矩阵
-    this.gl.uniform1f(this.tracer_uFocalDistance, this.focalDistance); //焦距
+    this.gl.useProgram(this.traceProgram.program);
 
-    this.gl.uniform1i(this.tracer_uTextureLocation, 0); //last trace result buffer绑定至 纹理0
-    this.gl.uniform1i(this.tracer_trianglesDataLocation, 1); //triangle data 绑定至 纹理1
+    this.uSeed.setData(Math.random(), DataType.uniform1f);
+    this.uTextureWeight.setData(this.sampleCount / ++this.sampleCount, DataType.uniform1f);
+    this.uFocalDistance.setData(this.focalDistance, DataType.uniform1f);
+
+    this.uOrigin.setData(camera.eye, DataType.uniform3fv);
+    this.uMatrix.setData(camera.matrix, DataType.uniformMatrix4fv);
+
+    this.uTextureTrace.setData(0, DataType.uniform1i);
+    this.utrianglesData.setData(1, DataType.uniform1i);
+    // this.uTextureRender.setData(1, DataType.uniform1i);
+    
 
     this.gl.activeTexture(this.gl.TEXTURE0);
     this.gl.bindTexture(this.gl.TEXTURE_2D, this.textures[0]);
@@ -171,11 +208,9 @@ export class WebglRenderer {
 
     this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.framebuffer); //设置 片元着色器输出的帧缓存
     // 将帧缓存绑定到纹理texture【1】
-    this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0, this.gl.TEXTURE_2D, this.textures[1], 0); 
+    this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0, this.gl.TEXTURE_2D, this.textures[1], 0);
 
-    // 指定覆盖屏幕的两个三角形
-    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vertexBuffer);
-    this.gl.vertexAttribPointer(this.tracer_aPositionLocation, 2, this.gl.FLOAT, false, 0, 0);
+
     //向帧缓存即纹理 draw 
     this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
 
@@ -191,19 +226,17 @@ export class WebglRenderer {
 
 
     //运行绘制结果program
-    this.gl.useProgram(this.renderProgram);
-    this.gl.uniform1i(this.render_uTextureLocation, 0);  //绑定至 纹理0
+    this.gl.useProgram(this.renderProgram.program);
+    this.uTextureRender.setData(0, DataType.uniform1i);
     this.gl.activeTexture(this.gl.TEXTURE0);
     this.gl.bindTexture(this.gl.TEXTURE_2D, this.textures[0]); //绑定上面光线跟踪的新结果到 纹理0
 
     //向屏幕 draw 
-    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vertexBuffer);
-    this.gl.vertexAttribPointer(this.render_aPositionLocation, 2, this.gl.FLOAT, false, 0, 0);
     this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
-
-    // stats.end();
   }
 
 
 
 }
+
+

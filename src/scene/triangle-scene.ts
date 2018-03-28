@@ -15,11 +15,24 @@ export const triangleSceneJson = [
     type: 'triangle',
     geo: {
       x:[1,1,0],
-      y:[0,-1,0],
-      z:[0,0,0],
+      y:[0,1,0],
+      z:[0,0,1],
     },
     mate: {
       color: [0, 0.96, 0],
+      lightness: [0.0, 0.1, 0.0],
+    }
+  },
+
+  {
+    type: 'triangle',
+    geo: {
+      x: [10, 1, 0],
+      y: [10, -1, 0],
+      z: [10, 0, 0],
+    },
+    mate: {
+      color: [1, 0, 0.8],
       lightness: [0.0, 0.1, 0.0],
     }
   },

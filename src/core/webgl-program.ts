@@ -1,41 +1,24 @@
+import { WebglRenderer } from "./webgl-renderer";
+import { GLShader } from "./webgl-shader";
 
-const fragmentShaderPreclude =
-  `
-  #ifndef GL_FRAGMENT_PRECISION_HIGH
-  precision mediump float;
-  precision mediump int;
-  #else
-  precision highp float;
-  precision highp int;
-  #endif
-  `
-
-
-
-
-export class RayWebGLProgram{
-  constructor(gl: WebGLRenderingContext) {
-    this.gl = gl;
+export class GLProgram {
+  constructor(renderer: WebglRenderer, vertexShader: GLShader, fragmentShader: GLShader) {
+    this.renderer = renderer;
+    renderer.program.push(this);
+    this.createProgram(vertexShader, fragmentShader);
   }
-  public gl: WebGLRenderingContext;
+  renderer: WebglRenderer
+  program: WebGLProgram
 
-  private vertexShader: string;
-  private fragmentShader: string;
-
-  private program: WebGLProgram;
-
-  createProgram() {
-    let program = this.gl.createProgram();
-    this.gl.attachShader(program, this.vertexShader);
-    this.gl.attachShader(program, this.fragmentShader);
-    this.gl.linkProgram(program);
-    if (!this.gl.getProgramParameter(program, this.gl.LINK_STATUS)) {
-      throw ("Program linking failed:" + this.gl.getProgramInfoLog(program));
+  createProgram(vertexShader: GLShader, fragmentShader: GLShader) {
+    const gl = this.renderer.gl;
+    this.program = gl.createProgram();
+    gl.attachShader(this.program, vertexShader.shader);
+    gl.attachShader(this.program, fragmentShader.shader);
+    gl.linkProgram(this.program);
+    if (!gl.getProgramParameter(this.program, gl.LINK_STATUS)) {
+      let info = gl.getProgramInfoLog(this.program);
+      throw 'Could not compile WebGL program. \n\n' + info;
     }
-    this.program = program;
-    return program;
   }
-
-  
-
 }

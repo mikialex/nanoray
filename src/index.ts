@@ -9,8 +9,10 @@ import { Camera } from './core/camera';
 import { CameraControler } from './core/camera-controler';
 
 window.onload = function () {
-  let renderer = new WebglRenderer();
-  renderer.initGL(document.getElementById('canvas') as HTMLCanvasElement);
+  let renderer = new WebglRenderer(document.getElementById('canvas') as HTMLCanvasElement);
+  renderer.prepare();
+
+
 
   let camera = new Camera(Math.PI / 4.0, renderer.canvas.clientWidth / renderer.canvas.clientHeight, 1.0, 100.0);
   camera.moveTo(4.286099433898926, 3.482257127761841, 6.155584335327148);
@@ -22,11 +24,21 @@ window.onload = function () {
   // renderer.addCamera(camera);
   renderer.render(camera);
 
+
+
+
+
+
   function animate() {
     requestAnimationFrame(animate);
     renderer.render(camera);
   }
   animate();
+
+
+
+
+
 }
 
 

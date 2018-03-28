@@ -10,7 +10,7 @@ precision highp int;
 
 const float POSITIVE_INFINITY = 1.0 / EPSILON;
 
-const vec3 bgcolor = vec3(0.1, 0.1, 0.2);
+const vec3 bgcolor = vec3(0.8, 0.8, 0.7);
 const float width = 1280.0;
 const float height = 692.0;
 const float blurRadius = 0.01;
@@ -67,12 +67,13 @@ float seed = uSeed;
 //     if (hit.z < box.min.z + EPSILON) return vec3(0.0, 0.0, -1.0); else
 //                                      return vec3(0.0, 0.0, 1.0);
 // }
-const float triNum =2.0 * 5.0 - 0.001;
-const float u1 = 1.0 / triNum;
-const float u2 = 2.0 / triNum;
-const float u3 = 3.0 / triNum;
-const float u4 = 4.0 / triNum;
-const float u5 = 5.0 / triNum;
+const float triNum = {#triangleNumber#}.0;
+const float sep =triNum * 5.0 - 0.001;
+const float u1 = 1.0 / sep;
+const float u2 = 2.0 / sep;
+const float u3 = 3.0 / sep;
+const float u4 = 4.0 / sep;
+const float u5 = 5.0 / sep;
 
 struct Triangle {
     vec3 p1;
@@ -166,26 +167,26 @@ bool intersect(
     out vec3 normal,
     out vec3 diffuse, 
     out vec3 emittance,
-    inout vec3 debug) {
+    inout vec3 debug
+    ) {
 
     float hitResult = 1.0;
     int hitIndex;
     float t;
 
+    debug=vec3(0,0,0);
 
-    for (int i = 0; i < 2; ++i) {
+
+    for (int i = 0; i < {#triangleNumber#}; ++i) {
         t = triangle_getIntersection( i, origin, delta);
         if (t < hitResult) {
             hitResult = t;
             hitIndex = i;
         }
     }
-    debug=vec3(hitResult,hitResult,hitResult);
-    // debug=vec3(0.5,0.5,0.5);
     
     if (hitResult < 1.0) {
-        // debug=vec3(0,0,hitResult - 99000.0);
-        Triangle triangle = getTriangle(1);
+        Triangle triangle = getTriangle(hitIndex);
         position = origin + delta * hitResult;
         normal = triangle_getPointNormal(hitIndex, position);
         diffuse = triangle.rgb;
@@ -221,7 +222,7 @@ void main(void) {
     vec3 position, normal, diffuse, emittance;
     vec3 debug=vec3(0.0, 0.0, 0.0);
 
-    for (int depth = 0; depth < 2; ++depth) {
+    for (int depth = 0; depth < {#triangleNumber#}; ++depth) {
         if (intersect(origin, delta, position, normal, diffuse, emittance, debug)) {
             if (depth == 0) {
               dist = length(position - origin);
@@ -229,6 +230,9 @@ void main(void) {
             color += reflectance * emittance;
             reflectance *= diffuse;
             origin = position + normal * EPSILON;
+            // if(dot(normal, delta) > 0.0){
+            //     normal= normal * -1.0;
+            // }
             normal = cosineSampleHemisphere(normal);
             delta = normal * 100.0;
         } else {
@@ -236,13 +240,12 @@ void main(void) {
             break;
         }
     }
+    gl_FragColor = vec4(mix(color, texture2D(uTexture, vTexCoords).rgb, uTextureWeight), dist);
+
     // intersect(origin, delta, position, normal, diffuse, emittance,debug );
-    // if(intersect(origin, delta, position, normal, diffuse, emittance,debug )){
-    //     // color+=bgcolor;
-    // } else {
-    //     color += debug;
-    // }
+    // Triangle triangle = getTriangle(1);
+    // debug=triangle.p2;
     // color = debug;
     // gl_FragColor = vec4(color.rgb, 1);
-    gl_FragColor = vec4(mix(color, texture2D(uTexture, vTexCoords).rgb, uTextureWeight), dist);
+
 }
