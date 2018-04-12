@@ -8,11 +8,11 @@ export class Scene{
     
   }
 
+  primitiveList: Array<Primitive> = [];
+
   addPrimitive(prim:Primitive) {
     this.primitiveList.push(prim);
   }
-
-  primitiveList: Array<Primitive> = [];
 
   get dataLength() {
     let sum = 0;
