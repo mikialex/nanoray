@@ -1,4 +1,4 @@
-import { Camera } from "./camera";
+import { Camera } from "../camera";
 declare var require: any;
 let renderVertexShader = require('../shader/vertex/render.glsl');
 let renderFragmenShader = require('../shader/fragment/render.glsl');
@@ -6,17 +6,18 @@ let tracerVertexShader = require('../shader/vertex/tracer.glsl');
 let tracerFragmentShader = require('../shader/fragment/tracer.glsl');
 
 
-import { sceneJson } from '../scene/box-scene-o'
-import { triangleSceneJson } from '../scene/triangle-scene'
-import { Scene } from "./scene";
+import { sceneJson } from '../../scene/box-scene-o'
+import { triangleSceneJson } from '../../scene/triangle-scene'
+import { Scene } from "../scene";
 
-import { test } from '../loader/test-obj';
-import { Vector3 } from "../math/vector3";
+import { test } from '../../loader/test-obj';
+import { Vector3 } from "../../math/vector3";
 import { GLProgram } from "./webgl-program";
 import { GLAttribute } from "./webgl-attribute";
 import { GLUniform, DataType } from "./webgl-uniform";
 import { GLShader, ShaderType } from "./webgl-shader";
 import { createTexture } from "./webgl-texture";
+import { ObjFileLoader } from "../../loader/obj-loader";
 
 
 
@@ -67,62 +68,9 @@ export class WebglRenderer {
   uFocalDistance
 
   prepare() {
-    let triangle;
-
-
-    // let scene = new Scene();
-    // scene.parseSceneJson(triangleSceneJson);
-    // console.log(scene);
-    // console.log('scene array data:', scene.toDataArray());
-    // console.log(scene.dataLength);
-
-    // let d = scene.toDataArray();
-    // var data = new Float32Array(d);
-    // console.log(data);
-    // triangle = d.length / 4;
-    // this.trianglesData = createTexture(this.gl, triangle, 1, this.gl.RGBA, this.gl.FLOAT, data);
-
-    const rows = test.split('\n');
-    const vertice = [];
-    const triangles = [];
-    rows.forEach(row => {
-      if (row.length > 1) {
-        if (row[0] === 'v') {
-          let temp = row.split(' ');
-          console.log(temp);
-          vertice.push(new Vector3(Number(temp[1]), Number(temp[2]), Number(temp[3])));
-        } else if (row[0] === 'f') {
-          let temp = row.split(' ');
-          temp = temp.slice(1, temp.length);
-          if (temp.length === 3) {
-            triangles.push(new Vector3(Number(temp[0]), Number(temp[1]), Number(temp[2])));
-          } else {
-            triangles.push(new Vector3(Number(temp[0]), Number(temp[1]), Number(temp[2])));
-            triangles.push(new Vector3(Number(temp[0]), Number(temp[2]), Number(temp[3])));
-          }
-        }
-      }
-    });
-    console.log(vertice);
-    console.log(triangles);
-
-    let dataArray = [];
-    triangles.forEach((triangle, index) => {
-      // if (index < 20) {
-      dataArray = dataArray.concat([
-        vertice[triangle.x - 1].x, vertice[triangle.x - 1].y, vertice[triangle.x - 1].z, 0,
-        vertice[triangle.y - 1].x, vertice[triangle.y - 1].y, vertice[triangle.y - 1].z, 0,
-        vertice[triangle.z - 1].x, vertice[triangle.z - 1].y, vertice[triangle.z - 1].z, 0,
-        Math.random(), 0.6, 1, 0,
-      ])
-
-      // if (Math.random() > 0.9) {
-      //   dataArray = dataArray.concat([1,1,1,1]);
-      // } else {
-        dataArray = dataArray.concat([0,0,0,0]);
-      // }
-      // }
-    });
+    let scene = new Scene();
+    ObjFileLoader.loadFromObjString(test,scene);
+    let dataArray = scene.toDataArray();
     dataArray = dataArray.concat([
       100, 0, 0, 0,
       0, 100, 0, 0,
@@ -133,7 +81,7 @@ export class WebglRenderer {
     console.log(dataArray);
     var data = new Float32Array(dataArray);
     console.log(data);
-    triangle = dataArray.length / 4
+    let triangle = dataArray.length / 4
     this.trianglesData = createTexture(this.gl, triangle, 1, this.gl.RGBA, this.gl.FLOAT, data);
 
 

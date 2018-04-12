@@ -1,6 +1,6 @@
 import { Vector3 } from "../math/vector3";
 
-export class Triangle {
+export class Ray {
   constructor(origin: Vector3, direction: Vector3) {
     this.origin = origin;
     this.direction = direction;

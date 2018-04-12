@@ -1,10 +1,5 @@
-//Reference
-//http://madebyevan.com/webgl-path-tracing/
-//https://github.com/evanw/webgl-path-tracing
-//https://experiments.withgoogle.com/chrome/blox-path-tracer
 
-
-import { WebglRenderer } from './core/webgl-renderer'
+import { WebglRenderer } from './core/webgl/webgl-renderer'
 import { Camera } from './core/camera';
 import { CameraControler } from './core/camera-controler';
 

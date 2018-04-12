@@ -1,4 +1,4 @@
-import { WebglRenderer } from "./webgl-renderer";
+import { WebglRenderer } from "./webgl/webgl-renderer";
 import { CameraControler } from "./camera-controler";
 
 export class Camera {

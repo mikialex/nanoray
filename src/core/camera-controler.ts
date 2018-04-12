@@ -1,5 +1,5 @@
 import { Camera } from "./camera";
-import { WebglRenderer } from "./webgl-renderer";
+import { WebglRenderer } from "./webgl/webgl-renderer";
 
 export class CameraControler {
   constructor(camera: Camera) {
