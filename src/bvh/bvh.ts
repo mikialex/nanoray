@@ -1,4 +1,4 @@
-import { BVHNode } from './bvhNode';
+import { BVHNode } from './bvh-node';
 import { Vector3 } from '../math/vector3';
 import { Scene } from '../core/scene';
 
@@ -12,68 +12,33 @@ export interface Raw {
   aabbMin: Vector3;
   aabbMax: Vector3;
   center: Vector3;
-  id: string;
+  id: number;
 }
 
 export const maxDepth = 10;
 export class BVHTree {
   root: BVHNode;
   itemList: Raw[];
-  flattenList: BVHNode[] = [];
-  hasAllocate = false;
 
   parseScene(scene: Scene) {
     const list: Raw[] = [];
-    function parseNode(node: any, list: any[]) {
-      if (node.geometry) {
-        node.geometry.computeBoundingBox();
-        const position = node.getWorldPosition();
-        const item: Raw = {
-          aabbMin: node.geometry.boundingBox.min,
-          aabbMax: node.geometry.boundingBox.max,
-          center: node.geometry.boundingBox.getCenter(),
-          id: node.uuid,
-        }
-        item.aabbMin.setX(item.aabbMin.x + position.x);
-        item.aabbMin.setY(item.aabbMin.y + position.y);
-        item.aabbMin.setZ(item.aabbMin.z + position.z);
-
-        item.aabbMax.setX(item.aabbMax.x + position.x);
-        item.aabbMax.setY(item.aabbMax.y + position.y);
-        item.aabbMax.setZ(item.aabbMax.z + position.z);
-
-        item.center.setX(item.center.x + position.x);
-        item.center.setY(item.center.y + position.y);
-        item.center.setZ(item.center.z + position.z);
-        list.push(item);
-      }
-      if (node.children.length > 0) {
-        for (let i = 0; i < node.children.length; i++) {
-          parseNode(node.children[i], list);
-        }
-      }
-    }
-    parseNode(scene, list);
-    list.sort((a: Raw, b: Raw) => {
-      if (a.center.x >= b.center.x) {
-        return 1;
-      } else {
-        return -1;
-      }
-    });
-    // console.log('parseScene list',list);
+    scene.primitiveList.forEach((prim, index) => {
+      list.push({
+        aabbMin: prim.geometry.getAABBMin(),
+        aabbMax: prim.geometry.getAABBMax(),
+        center: prim.geometry.getCenter(),
+        id: index
+      })
+    })
     this.itemList = list;
   }
 
   buildBVH() {
-    // this.flattenList.length === 100;
-    if (!this.hasAllocate) {
-      this.root = new BVHNode(0, 0, this.flattenList);
-      this.hasAllocate = true;
-    }
-    build(this.root, this.itemList, 0, this.flattenList);
-    console.log(this.root);
-    console.log(this.flattenList);
+      this.root = new BVHNode(this.itemList, 0);
+  }
+
+  generateFlattenList() {
+    
   }
 
 
