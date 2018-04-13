@@ -29,4 +29,26 @@ export class Triangle extends Geometry {
       this.p3.x, this.p3.y, this.p3.z, 0,
     ]
   }
+
+  getAABBMin() {
+    return new Vector3(
+      Math.min(this.p1.x, this.p2.x, this.p3.x),
+      Math.min(this.p1.y, this.p2.y, this.p3.y),
+      Math.min(this.p1.z, this.p2.z, this.p3.z),
+    );
+  }
+  getAABBMax() {
+    return new Vector3(
+      Math.max(this.p1.x, this.p2.x, this.p3.x),
+      Math.max(this.p1.y, this.p2.y, this.p3.y),
+      Math.max(this.p1.z, this.p2.z, this.p3.z),
+    );
+  }
+  getCenter() {
+    return new Vector3(
+      Math.max(this.p1.x, this.p2.x, this.p3.x) + Math.min(this.p1.x, this.p2.x, this.p3.x),
+      Math.max(this.p1.y, this.p2.y, this.p3.y) + Math.min(this.p1.y, this.p2.y, this.p3.y),
+      Math.max(this.p1.z, this.p2.z, this.p3.z) + Math.min(this.p1.z, this.p2.z, this.p3.z),
+    ).multiScalar(0.5);
+  }
 }

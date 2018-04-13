@@ -5,7 +5,7 @@ export abstract class Geometry{
   dataLength: number;
   geoId: number;
 
-  abstract getAABBMin();
-  abstract getAABBMax();
-  abstract getCenter();
+  abstract getAABBMin(): Vector3;
+  abstract getAABBMax(): Vector3;
+  abstract getCenter(): Vector3;
 }

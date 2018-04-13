@@ -24,6 +24,14 @@ export class BoxGeometry extends Geometry{
     ]
   }
 
-
+  getAABBMin() {
+    return this.minPoint;
+  }
+  getAABBMax() {
+    return this.maxPoint;
+  }
+  getCenter() {
+    return new Vector3(0,0,0); // not imple
+  }
 
 }

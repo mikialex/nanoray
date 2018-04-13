@@ -7,4 +7,11 @@ export class Vector3 {
   x = 0;
   y = 0;
   z = 0;
+
+  multiScalar(scalar: number) {
+    this.x *= scalar;
+    this.y *= scalar;
+    this.z *= scalar;
+    return this;
+  }
 }

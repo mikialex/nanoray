@@ -34,11 +34,55 @@ export class BVHTree {
   }
 
   buildBVH() {
-      this.root = new BVHNode(this.itemList, 0);
+    this.root = new BVHNode(this.itemList, 0, null, false);
   }
 
   generateFlattenList() {
-    
+    let triangBVHList: Raw[] = [];
+    let flattenList = [];
+    function pushNode(flattenList, node: BVHNode, offset) {
+      node.offset = offset;
+      let split = 0;
+      if (node.splitAxis = Axis.Y) {
+        split = 1;
+      }
+      if (node.splitAxis = Axis.Z) {
+        split = 2;
+      }
+      let start = triangBVHList.length;
+      triangBVHList = triangBVHList.concat(node.itemList);
+      let end = triangBVHList.length;
+      if (node.parent !== null) {
+        if (node.isSelfLeft) {
+          flattenList[flattenList.length - 5] = offset;
+        } else {
+          flattenList[flattenList.length - 4] = offset;
+        }
+      }
+      const nodeInfo = [
+        
+        node.aabbMin.x,
+        node.aabbMin.y,
+        node.aabbMin.z,
+        node.aabbMax.x,
+        node.aabbMax.y,
+        node.aabbMax.z,
+
+        node.parent? node.parent.offset:-1,
+        -1,
+        -1,
+        
+        split,
+        start,
+        end,
+      ]  
+      flattenList = flattenList.concat(nodeInfo);
+      if (node.leftNode) {
+        pushNode(flattenList, node.leftNode, flattenList.length);
+        pushNode(flattenList, node.leftNode, flattenList.length);
+      }
+    }
+    pushNode(flattenList, this.root, 0);
   }
 
 

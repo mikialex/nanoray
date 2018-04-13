@@ -8,6 +8,7 @@ export class BVHNode {
 
   leftNode: BVHNode = null;
   rightNode: BVHNode = null;
+  parent: BVHNode = null;
   overlaped = false;
   itemList: Raw[];
   depth: number;
@@ -15,20 +16,29 @@ export class BVHNode {
   bestLeftPart: Raw[];
   bestRightPart: Raw[];
 
+  offset: number;
+  leftOffset: number;
+  rightOffset: number;
+  isSelfLeft: boolean;
 
-  constructor(itemList: Raw[], depth: number,) { 
+
+  constructor(itemList: Raw[], depth: number,farther:BVHNode, isLeft:boolean) { 
     this.depth = depth;
-    calNodeInfo( this, itemList, depth);
+    calNodeInfo(this, itemList);
+    if (farther) {
+      this.parent = farther;
+    }
+    this.isSelfLeft = isLeft;
     if (this.itemList.length > 1 && this.depth < maxDepth) {
       calBestPartition(this.itemList, this.splitAxis, this);
-      this.leftNode = new BVHNode(this.bestLeftPart, this.depth + 1);
-      this.rightNode = new BVHNode(this.bestRightPart, this.depth + 1);
+      this.leftNode = new BVHNode(this.bestLeftPart, this.depth + 1, this, true);
+      this.rightNode = new BVHNode(this.bestRightPart, this.depth + 1, this, false);
     }
   }
 
 }
 
-function calNodeInfo(node: BVHNode, itemList: Raw[], depth: number) {
+function calNodeInfo(node: BVHNode, itemList: Raw[]) {
   node.itemList = itemList;
   const xmin = calMin(itemList, Axis.X);
   const ymin = calMin(itemList, Axis.Y);
