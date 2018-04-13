@@ -11,6 +11,7 @@ window.onload = function () {
 
   let camera = new Camera(Math.PI / 4.0, renderer.canvas.clientWidth / renderer.canvas.clientHeight, 1.0, 100.0);
   camera.moveTo(18, -20, -20);
+  camera.lookAt(0, 0, 0);
 
   let cameraControler = new CameraControler(camera);
   cameraControler.mount();
@@ -22,10 +23,14 @@ window.onload = function () {
 
 
 
+  let count = 0;
 
   function animate() {
     requestAnimationFrame(animate);
-    renderer.render(camera);
+    if (count < 10) {
+      renderer.render(camera);
+      count++;
+    }
   }
   animate();
 

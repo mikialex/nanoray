@@ -1,6 +1,6 @@
 import { Primitive } from "./primitive";
 import { BoxGeometry } from "../geometry/box";
-import { SimpleMaterial } from "../material/simple";
+import { SimpleMaterial } from "../material/simple-material";
 import { Triangle } from "../geometry/triangle";
 
 export class Scene{

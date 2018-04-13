@@ -1,9 +1,9 @@
 import { Camera } from "../camera";
 declare var require: any;
-let renderVertexShader = require('../shader/vertex/render.glsl');
-let renderFragmenShader = require('../shader/fragment/render.glsl');
-let tracerVertexShader = require('../shader/vertex/tracer.glsl');
-let tracerFragmentShader = require('../shader/fragment/tracer.glsl');
+let renderVertexShader = require('../../shader/vertex/render.glsl');
+let renderFragmenShader = require('../../shader/fragment/render.glsl');
+let tracerVertexShader = require('../../shader/vertex/tracer.glsl');
+let tracerFragmentShader = require('../../shader/fragment/tracer.glsl');
 
 
 import { sceneJson } from '../../scene/box-scene-o'

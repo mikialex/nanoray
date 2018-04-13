@@ -5,7 +5,7 @@ export class SimpleMaterial extends Material{
   constructor(color?: Vector3, lightness?: Vector3) {
     super();
     this.color = color;
-    this.lightness = color;
+    this.lightness = lightness;
   }
 
   color: Vector3;
