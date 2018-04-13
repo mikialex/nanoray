@@ -18,6 +18,10 @@ import { GLUniform, DataType } from "./webgl-uniform";
 import { GLShader, ShaderType } from "./webgl-shader";
 import { createTexture } from "./webgl-texture";
 import { ObjFileLoader } from "../../loader/obj-loader";
+import { Primitive } from "../primitive";
+import { Triangle } from "../../geometry/triangle";
+import { SimpleMaterial } from "../../material/simple-material";
+import { BVHTree } from "../../bvh/bvh";
 
 
 
@@ -69,7 +73,32 @@ export class WebglRenderer {
 
   prepare() {
     let scene = new Scene();
-    ObjFileLoader.loadFromObjString(test,scene);
+    // ObjFileLoader.loadFromObjString(test, scene);
+    
+    scene.addPrimitive(new Primitive(
+      new Triangle(
+        new Vector3(0, 0, 0),
+        new Vector3(0, 1, 0),
+        new Vector3(0, 0, 1),
+      ), new SimpleMaterial(new Vector3(0, 0, 0), new Vector3(0, 0, 0))));
+    scene.addPrimitive(new Primitive(
+      new Triangle(
+        new Vector3(5, 0, 0),
+        new Vector3(5, 1, 0),
+        new Vector3(5, 0, 1),
+      ), new SimpleMaterial(new Vector3(0, 0, 0), new Vector3(0, 0, 0))));
+    scene.addPrimitive(new Primitive(
+      new Triangle(
+        new Vector3(5, 5, 0),
+        new Vector3(5, 6, 0),
+        new Vector3(5, 5, 1),
+      ), new SimpleMaterial(new Vector3(0, 0, 0), new Vector3(0, 0, 0))));
+    
+    let testBvh = new BVHTree();
+    testBvh.parseScene(scene);
+    testBvh.buildBVH();
+    testBvh.generateFlattenList();
+
     let dataArray = scene.toDataArray();
     dataArray = dataArray.concat([
       100, 0, 0, 0,

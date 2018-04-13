@@ -20,6 +20,7 @@ export class BVHNode {
   leftOffset: number;
   rightOffset: number;
   isSelfLeft: boolean;
+  private _subTreeNodeCount: number = -1;
 
 
   constructor(itemList: Raw[], depth: number,farther:BVHNode, isLeft:boolean) { 
@@ -33,6 +34,18 @@ export class BVHNode {
       calBestPartition(this.itemList, this.splitAxis, this);
       this.leftNode = new BVHNode(this.bestLeftPart, this.depth + 1, this, true);
       this.rightNode = new BVHNode(this.bestRightPart, this.depth + 1, this, false);
+    }
+  }
+
+  getSubTreeNodeCount() {
+    if (this.leftNode) {
+      if (this._subTreeNodeCount === -1) {
+        this._subTreeNodeCount = this.leftNode.getSubTreeNodeCount() + this.leftNode.getSubTreeNodeCount() + 1;
+      } 
+      return this._subTreeNodeCount;
+    } else {
+      this._subTreeNodeCount = 1;
+      return this._subTreeNodeCount;
     }
   }
 
