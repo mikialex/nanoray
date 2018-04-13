@@ -65,6 +65,9 @@ export class WebglRenderer {
   trianglesData
   utrianglesData
 
+  bvhData
+  uBvhData
+
   uSeed
   uOrigin
   uMatrix
@@ -74,7 +77,17 @@ export class WebglRenderer {
   prepare() {
     let scene = new Scene();
     // ObjFileLoader.loadFromObjString(test, scene);
-    
+    // let dataArray = scene.toDataArray();
+    // dataArray = dataArray.concat([
+    //   100, 0, 0, 0,
+    //   0, 100, 0, 0,
+    //   0, 0, 100, 0,
+    //   1, 1, 1, 1,
+    //   1, 1, 1, 1
+    // ]);
+    // var data = new Float32Array(dataArray);
+
+
     scene.addPrimitive(new Primitive(
       new Triangle(
         new Vector3(0, 0, 0),
@@ -99,21 +112,15 @@ export class WebglRenderer {
     testBvh.buildBVH();
     testBvh.generateFlattenList();
 
-    let dataArray = scene.toDataArray();
-    dataArray = dataArray.concat([
-      100, 0, 0, 0,
-      0, 100, 0, 0,
-      0, 0, 100, 0,
-      1, 1, 1, 1,
-      1,1,1,1
-    ]);
-    console.log(dataArray);
-    var data = new Float32Array(dataArray);
-    console.log(data);
-    let triangle = dataArray.length / 4
-    this.trianglesData = createTexture(this.gl, triangle, 1, this.gl.RGBA, this.gl.FLOAT, data);
+    let tridataArray = testBvh.BVHTriangleToDataArray();
+    console.log('triangle data in shader', tridataArray);
+    let triangle = tridataArray.length / 4
+    this.trianglesData = createTexture(this.gl, triangle, 1, this.gl.RGBA, this.gl.FLOAT, tridataArray);
 
-
+    let bvhdataArray = testBvh.BVHToDataArray();
+    console.log('bvh data in shader', bvhdataArray);
+    let bvhd = bvhdataArray.length / 4
+    this.bvhData = createTexture(this.gl, bvhd, 1, this.gl.RGBA, this.gl.FLOAT, bvhdataArray);
 
     let renderVertexS = new GLShader(this);
     renderVertexS.compileRawShader(renderVertexShader, ShaderType.vertex);
@@ -145,6 +152,8 @@ export class WebglRenderer {
 
 
     this.utrianglesData = new GLUniform(this, 'trianglesData', this.traceProgram);
+    this.uBvhData = new GLUniform(this, 'bvhData', this.traceProgram);
+
     this.uSeed = new GLUniform(this, 'uSeed', this.traceProgram);
     this.uOrigin = new GLUniform(this, 'uOrigin', this.traceProgram);
     this.uMatrix = new GLUniform(this, 'uMatrix', this.traceProgram);
@@ -183,6 +192,7 @@ export class WebglRenderer {
 
     this.uTextureTrace.setData(0, DataType.uniform1i);
     this.utrianglesData.setData(1, DataType.uniform1i);
+    this.uBvhData.setData(2, DataType.uniform1i);
     // this.uTextureRender.setData(1, DataType.uniform1i);
 
 
@@ -193,7 +203,7 @@ export class WebglRenderer {
     this.gl.bindTexture(this.gl.TEXTURE_2D, this.trianglesData);
 
     this.gl.activeTexture(this.gl.TEXTURE2);
-    this.gl.bindTexture(this.gl.TEXTURE_2D, this.textures[1]);
+    this.gl.bindTexture(this.gl.TEXTURE_2D, this.bvhData);
 
     this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.framebuffer); //设置 片元着色器输出的帧缓存
     // 将帧缓存绑定到纹理texture【1】

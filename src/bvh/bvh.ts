@@ -62,7 +62,9 @@ export class BVHTree {
       let start, end;
       if (!node.leftNode) {
         start = tree.triangBVHList.length;
-        tree.triangBVHList = tree.triangBVHList.concat(node.itemList);
+        node.itemList.forEach(tri => {
+          tree.triangBVHList.push(tri);
+        })
         end = tree.triangBVHList.length;
       } else {
         start = -1;
@@ -100,7 +102,7 @@ export class BVHTree {
       })
       if (node.leftNode) {
         pushNode(tree, flattenList, node.leftNode, flattenList.length);
-        pushNode(tree, flattenList, node.leftNode, flattenList.length);
+        pushNode(tree, flattenList, node.rightNode, flattenList.length);
       }
     }
     pushNode(this,flattenList, this.root, 0);
@@ -119,14 +121,27 @@ export class BVHTree {
       array.push(tri.p1.x);
       array.push(tri.p1.y);
       array.push(tri.p1.z);
+      array.push(0);
 
       array.push(tri.p2.x);
       array.push(tri.p2.y);
       array.push(tri.p2.z);
+      array.push(0);
 
       array.push(tri.p3.x);
       array.push(tri.p3.y);
       array.push(tri.p3.z);
+      array.push(0);
+
+      array.push(0.5);
+      array.push(0.5);
+      array.push(0.5);
+      array.push(0);
+
+      array.push(0);
+      array.push(0);
+      array.push(0);
+      array.push(0);
     });
     return new Float32Array(array);
   }

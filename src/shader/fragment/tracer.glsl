@@ -17,9 +17,11 @@ const float blurRadius = 0.01;
 
 uniform vec3 uOrigin;
 uniform mat4 uMatrix;
+
 uniform sampler2D uTexture;
 uniform sampler2D trianglesData;
 uniform sampler2D bvhData;
+
 uniform float uSeed;
 uniform float uTextureWeight;
 uniform float uFocalDistance;
@@ -357,5 +359,9 @@ void main(void) {
     // debug=vec3(testT/ 100000.0,testT,testT);
     // color = debug;
     // gl_FragColor = vec4(color.rgb, 1);
+
+    // gl_FragColor = vec4(texture2D(bvhData, vec2(1.0, 0.0)).r * 0.1,
+    // texture2D(bvhData, vec2(1.0, 0.0)).r * 0.1,
+    // texture2D(bvhData, vec2(1.0, 0.0)).r * 0.1, 1);
 
 }
