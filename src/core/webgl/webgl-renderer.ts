@@ -30,7 +30,8 @@ import { BVHTree } from "../../bvh/bvh";
 export class WebglRenderer {
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
-    this.gl = this.canvas.getContext('webgl');
+    this.gl = this.canvas.getContext('webgl2');
+    console.log(this.gl);
 
     //https://developer.mozilla.org/en-US/docs/Web/API/OES_texture_float
     this.gl.getExtension('OES_texture_float');
@@ -38,7 +39,8 @@ export class WebglRenderer {
   }
 
   canvas: HTMLCanvasElement;
-  gl: WebGLRenderingContext;
+  // gl: WebGLRenderingContext;
+  gl: any;
 
   program: GLProgram[] = [];
   attributes: GLAttribute[] = [];
@@ -115,12 +117,12 @@ export class WebglRenderer {
     let tridataArray = testBvh.BVHTriangleToDataArray();
     console.log('triangle data in shader', tridataArray);
     let triangle = tridataArray.length / 4
-    this.trianglesData = createTexture(this.gl, triangle, 1, this.gl.RGBA, this.gl.FLOAT, tridataArray);
+    this.trianglesData = createTexture(this.gl, triangle, 1, this.gl.RGBA, this.gl.RGBA32F, this.gl.FLOAT, tridataArray);
 
     let bvhdataArray = testBvh.BVHToDataArray();
     console.log('bvh data in shader', bvhdataArray);
     let bvhd = bvhdataArray.length / 4
-    this.bvhData = createTexture(this.gl, bvhd, 1, this.gl.RGBA, this.gl.FLOAT, bvhdataArray);
+    this.bvhData = createTexture(this.gl, bvhd, 1, this.gl.RGBA, this.gl.RGBA32F, this.gl.FLOAT, bvhdataArray);
 
     let renderVertexS = new GLShader(this);
     renderVertexS.compileRawShader(renderVertexShader, ShaderType.vertex);
@@ -133,6 +135,7 @@ export class WebglRenderer {
     traceVertexS.compileRawShader(tracerVertexShader, ShaderType.vertex);
     let traceFragmentS = new GLShader(this);
     tracerFragmentShader = tracerFragmentShader.replace(/{#triangleNumber#}/g, triangle / 5);
+    tracerFragmentShader = tracerFragmentShader.replace(/{#bvhNodeNumber#}/g, bvhd / 3);
     traceFragmentS.compileRawShader(tracerFragmentShader, ShaderType.fragment);
     this.traceProgram = new GLProgram(this, traceVertexS, traceFragmentS);
 
@@ -162,8 +165,8 @@ export class WebglRenderer {
 
     this.framebuffer = this.gl.createFramebuffer();
 
-    this.textures.push(createTexture(this.gl, this.canvas.width, this.canvas.height, this.gl.RGBA, this.gl.FLOAT, null));
-    this.textures.push(createTexture(this.gl, this.canvas.width, this.canvas.height, this.gl.RGBA, this.gl.FLOAT, null));
+    this.textures.push(createTexture(this.gl, this.canvas.width, this.canvas.height, this.gl.RGBA, this.gl.RGBA32F, this.gl.FLOAT, null));
+    this.textures.push(createTexture(this.gl, this.canvas.width, this.canvas.height, this.gl.RGBA, this.gl.RGBA32F, this.gl.FLOAT, null));
   }
 
 
@@ -206,6 +209,7 @@ export class WebglRenderer {
     this.gl.bindTexture(this.gl.TEXTURE_2D, this.bvhData);
 
     this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.framebuffer); //设置 片元着色器输出的帧缓存
+
     // 将帧缓存绑定到纹理texture【1】
     this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0, this.gl.TEXTURE_2D, this.textures[1], 0);
 

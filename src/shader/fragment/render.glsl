@@ -1,7 +1,11 @@
+#version 300 es
+
 precision mediump float;
 const vec3 gamma = vec3(1.0 / 2.2);
 uniform sampler2D uTexture;
-varying vec2 vTexCoords;
+in vec2 vTexCoords;
+out vec4 FinalColor;
+
 void main() {
-    gl_FragColor = vec4(pow(texture2D(uTexture, vTexCoords).rgb, gamma), 1.0);
+    FinalColor = vec4(pow(texture(uTexture, vTexCoords).rgb, gamma), 1.0);
 }

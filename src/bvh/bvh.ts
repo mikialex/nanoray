@@ -90,10 +90,10 @@ export class BVHTree {
 
         (node.parent !== null) ? node.parent.offset : -1,
         node.leftNode ? offset + 12 : -1,
-        node.leftNode ? offset + (node.leftNode.getSubTreeNodeCount() + 1) * 12 : -1,
+        node.leftNode ? offset + node.leftNode.getSubTreeNodeCount() * 12 : -1,
         
         // split,
-        node.isSelfLeft && (node.parent !== null) ? offset + node.getSubTreeNodeCount() * 12 : -1,
+        offset + node.getSubTreeNodeCount() * 12,
         start,
         end,
       ]  
