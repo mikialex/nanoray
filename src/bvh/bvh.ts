@@ -67,8 +67,8 @@ export class BVHTree {
         })
         end = tree.triangBVHList.length;
       } else {
-        start = -1;
-        end = -1;
+        start = 0;
+        end = 0;
       }
 
       // if (node.parent !== null) {
@@ -88,9 +88,9 @@ export class BVHTree {
         node.aabbMax.y,
         node.aabbMax.z,
 
-        (node.parent !== null) ? node.parent.offset : -1,
-        node.leftNode ? offset + 12 : -1,
-        node.leftNode ? offset + node.leftNode.getSubTreeNodeCount() * 12 : -1,
+        (node.parent !== null) ? node.parent.offset : 0,
+        node.leftNode ? offset + 12 : 0,
+        node.leftNode ? offset + node.leftNode.getSubTreeNodeCount() * 12 : 0,
         
         // split,
         offset + node.getSubTreeNodeCount() * 12,

@@ -95,19 +95,19 @@ export class WebglRenderer {
         new Vector3(0, 0, 0),
         new Vector3(0, 1, 0),
         new Vector3(0, 0, 1),
-      ), new SimpleMaterial(new Vector3(0, 0, 0), new Vector3(0, 0, 0))));
+      ), new SimpleMaterial(new Vector3(1, 0, 0), new Vector3(0, 0, 0))));
     scene.addPrimitive(new Primitive(
       new Triangle(
         new Vector3(5, 0, 0),
         new Vector3(5, 1, 0),
         new Vector3(5, 0, 1),
-      ), new SimpleMaterial(new Vector3(0, 0, 0), new Vector3(0, 0, 0))));
+      ), new SimpleMaterial(new Vector3(0, 1, 0), new Vector3(0, 0, 0))));
     scene.addPrimitive(new Primitive(
       new Triangle(
         new Vector3(5, 5, 0),
         new Vector3(5, 6, 0),
-        new Vector3(5, 5, 1),
-      ), new SimpleMaterial(new Vector3(0, 0, 0), new Vector3(0, 0, 0))));
+        new Vector3(5, 5, 2),
+      ), new SimpleMaterial(new Vector3(0, 0, 1), new Vector3(0, 0, 0))));
     
     let testBvh = new BVHTree();
     testBvh.parseScene(scene);
@@ -120,6 +120,16 @@ export class WebglRenderer {
     this.trianglesData = createTexture(this.gl, triangle, 1, this.gl.RGBA, this.gl.RGBA32F, this.gl.FLOAT, tridataArray);
 
     let bvhdataArray = testBvh.BVHToDataArray();
+    // bvhdataArray[0] = 0;
+    // bvhdataArray[1] = 1;
+    // bvhdataArray[2] = 2;
+    // bvhdataArray[3] = 30;
+    // bvhdataArray[4] = 4;
+    // bvhdataArray[5] = 5;
+    // bvhdataArray[6] = 6;
+    // bvhdataArray[7] = 7;
+    // bvhdataArray[8] = 8;
+    // bvhdataArray[9] = 9;
     console.log('bvh data in shader', bvhdataArray);
     let bvhd = bvhdataArray.length / 4
     this.bvhData = createTexture(this.gl, bvhd, 1, this.gl.RGBA, this.gl.RGBA32F, this.gl.FLOAT, bvhdataArray);

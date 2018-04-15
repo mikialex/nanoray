@@ -29,7 +29,7 @@ uniform float uTextureWeight;
 uniform float uFocalDistance;
 
 in vec2 vTexCoords;
-out vec4 Finalcolor;
+out vec3 Finalcolor;
 
 
 float rand(inout float seed) {
@@ -51,7 +51,9 @@ vec3 cosineSampleHemisphere(inout float seed, vec3 normal) {
     return r3 * (u * cos(r1) + cross(normal, u) * sin(r1)) + normal * sqrt(1.0 - r2);
 }
 
-
+const float bvhNodeNum = 5.0;
+const float bvhsep =bvhNodeNum * 3.0;
+const float bvhStep = 1.0 / bvhsep;
 
 const float triNum = {#triangleNumber#}.0;
 const float sep =triNum * 5.0 - 0.001;
@@ -194,31 +196,31 @@ vec3 triangle_getPointNormal(float index, vec3 hit) {
 // end,
 
 float bvh_index_start(float bvh_node) {
-	return texture(bvhData, vec2(bvh_node + 2.0, 0.0)).b;
+	return texture(bvhData, vec2(bvh_node + bvhStep * 2.0, 0.0)).b;
 }
 float bvh_index_end(float bvh_node) {
-	return texture(bvhData, vec2(bvh_node + 2.0, 0.0)).a;
+	return texture(bvhData, vec2(bvh_node + bvhStep * 2.0, 0.0)).a;
 }
 
 
 // get bvh left node
 float bvh_left(float bvh_node) {
-	return texture(bvhData, vec2(bvh_node + 1.0, 0.0)).a;
+	return texture(bvhData, vec2(bvh_node + bvhStep, 0.0)).a;
 }
 
 // get bvh right node
 float bvh_right(float bvh_node) {
-	return texture(bvhData, vec2(bvh_node + 2.0, 0.0)).r;
+	return texture(bvhData, vec2(bvh_node + bvhStep * 2.0, 0.0)).r;
 }
 
 // get bvh parent node
 float bvh_parent(float bvh_node) {
-	return texture(bvhData, vec2(bvh_node + 1.0, 0.0)).b;
+	return texture(bvhData, vec2(bvh_node + bvhStep, 0.0)).b;
 }
 
 // get bvh right brother node, if not have return -1
 float bvh_pass(float bvh_node) {
-	return texture(bvhData, vec2(bvh_node + 2.0, 0.0)).g;
+	return texture(bvhData, vec2(bvh_node + bvhStep * 2.0, 0.0)).g;
 }
 
 float BvhBox_getIntersection(float bvh_node, vec3 origin, vec3 delta) {
@@ -226,11 +228,17 @@ float BvhBox_getIntersection(float bvh_node, vec3 origin, vec3 delta) {
         texture(bvhData, vec2(bvh_node, 0.0)).r,
         texture(bvhData, vec2(bvh_node, 0.0)).g,
         texture(bvhData, vec2(bvh_node, 0.0)).b
+        // 0.0,
+        // 0.0,
+        // 0.0
     );
     vec3 maxPoint = vec3(
         texture(bvhData, vec2(bvh_node, 0.0)).a,
-        texture(bvhData, vec2(bvh_node + 1.0, 0.0)).r,
-        texture(bvhData, vec2(bvh_node + 1.0, 0.0)).g
+        texture(bvhData, vec2(bvh_node + bvhStep, 0.0)).r,
+        texture(bvhData, vec2(bvh_node + bvhStep, 0.0)).g
+        // 5.0,
+        // 1.0,
+        // 1.0
     );
     vec3 t0 = (minPoint - origin) / delta;
     vec3 t1 = (maxPoint - origin) / delta;
@@ -243,98 +251,68 @@ float BvhBox_getIntersection(float bvh_node, vec3 origin, vec3 delta) {
 
 
 // index: index of nearest hit triangle
-float bvh_intersect(vec3 ray_o, vec3 ray_t, inout float index) {
-	float depth = 1.0; // intersection distance
-	index = -1.0;     //
-	float bvh_node = 0.0; // current visit nodes index
-	int t = 0;    // maybe use as intersection count
+// float bvh_intersect(vec3 ray_o, vec3 ray_t, inout float index) {
+// 	float depth = 1.0; // intersection distance
+// 	index = -1.0;     //
+// 	float bvh_node = 0.0; // current visit nodes index
+// 	int t = 0;    // maybe use as intersection count
+
+//     float cur_index;
+// 	while ( bvh_node < 1.0 ) {
+// 		t += 1;
+
+//         float cur_depth = BvhBox_getIntersection(bvh_node, ray_o, ray_t); //   bvh box intersect test
+//         if (cur_depth < 0.0 || cur_depth > depth) {
+//             bvh_node = (bvh_pass(bvh_node) / 60.0) * bvhStep;
+//         } else {
+//             if(bvh_left(bvh_node) > 1.0){ // trunk
+//                 bvh_node += 3.0 * bvhStep;
+//             }else{ // leaf
+//                 for (float i = bvh_index_start(bvh_node); i < bvh_index_end(bvh_node); ++i) {
+//                     cur_depth = triangle_getIntersection(i, ray_o, ray_t);
+//                     if (cur_depth >= 0.0 && cur_depth < depth) {
+//                         index = cur_index;
+//                         depth = cur_depth;
+//                     }
+//                 }
+//                 bvh_node += 3.0 * bvhStep;
+//             }
+//         }
+// 	};
+// 	return depth;
+// }
+
+// bool intersect(
+//     vec3 origin, 
+//     vec3 delta, 
+//     out vec3 position,
+//     out vec3 normal,
+//     out vec3 diffuse, 
+//     out vec3 emittance,
+//     inout vec4 debug
+//     ) {
+
+//     float hitResult = 1.0;
+//     float hitIndex = 0.0;
+//     float t;
 
 
-    // for (float bvh_node = 0.0; bvh_node <  {#bvhNodeNumber#}.0; bvh_node+=2.0) {
-    //     bvh_node = bvh_node + 1.0;
 
-    //     // float cur_depth = box_intersect(bvh_node, ray_o, ray_t); //   bvh box intersect test
-    //     // if (cur_depth < 0 || cur_depth > depth) {  　// not intersected
-    //     //     bvh_node = bvh_pass(bvh_node);
-    //     // } else {
-    //     //     if(bvh_left(bvh_node) != -1){ // trunk
-    //     //         bvh_node += 3;
-    //     //     }else{ // leaf
-    //     //         for (int i = bvh_index_start(bvh_node); i < bvh_index_end(bvh_node); ++i) {
-    //     //             cur_depth = triangle_getIntersection(i, ray_o, ray_t);
-    //     //             if (cur_depth >= 0 && cur_depth < depth) {
-    //     //                 index = cur_index;
-    //     //                 depth = cur_depth;
-    //     //             }
-    //     //         }
-    //     //         bvh_node += 3;
-    //     //     }
-    //     // }
-    // }
-
-
-	while ( bvh_node < {#bvhNodeNumber#}.0 ) {
-		t += 1;
-        bvh_node = bvh_node + 1.0;
-
-        // float cur_depth = box_intersect(bvh_node, ray_o, ray_t); //   bvh box intersect test
-        // if (cur_depth < 0 || cur_depth > depth) {  　// not intersected
-        //     bvh_node = bvh_pass(bvh_node);
-        // } else {
-        //     if(bvh_left(bvh_node) != -1){ // trunk
-        //         bvh_node += 3;
-        //     }else{ // leaf
-        //         for (int i = bvh_index_start(bvh_node); i < bvh_index_end(bvh_node); ++i) {
-        //             cur_depth = triangle_getIntersection(i, ray_o, ray_t);
-        //             if (cur_depth >= 0 && cur_depth < depth) {
-        //                 index = cur_index;
-        //                 depth = cur_depth;
-        //             }
-        //         }
-        //         bvh_node += 3;
-        //     }
-        // }
-	};
-	return depth;
-}
-
-bool intersect(
-    vec3 origin, 
-    vec3 delta, 
-    out vec3 position,
-    out vec3 normal,
-    out vec3 diffuse, 
-    out vec3 emittance,
-    inout vec3 debug
-    ) {
-
-    float hitResult = 1.0;
-    float hitIndex;
-    float t;
-
-    debug=vec3(0,0,0);
-
-
-    // for (int i = 0; i < {#triangleNumber#}; ++i) {
-    //     t = triangle_getIntersection( i, origin, delta);
-    //     if (t < hitResult) {
-    //         hitResult = t;
-    //         hitIndex = i;
-    //     }
-    // }
-    hitResult = bvh_intersect(origin,delta,hitIndex);
+//     hitResult = bvh_intersect(origin,delta,hitIndex);
     
-    if (hitResult < 1.0) {
-        Triangle triangle = getTriangle(hitIndex);
-        position = origin + delta * hitResult;
-        normal = triangle_getPointNormal(hitIndex, position);
-        diffuse = triangle.rgb;
-        emittance = triangle.lit;
-        return true;
-    } else {
-        return false;
-    }
-}
+//     debug=vec4(hitIndex,hitIndex,hitIndex,0);
+
+//     if (hitResult < 1.0) {
+//         Triangle triangle = getTriangle(hitIndex);
+//         position = origin + delta * hitResult;
+//         normal = triangle_getPointNormal(hitIndex, position);
+//         diffuse = triangle.rgb;
+//         emittance = triangle.lit;
+//         return true;
+//     } else {
+//         return false;
+//     }
+// }
 
 
 
@@ -361,7 +339,7 @@ void main(void) {
     vec3 color = vec3(0.0, 0.0, 0.0);
     vec3 reflectance = vec3(1.0, 1.0, 1.0);
     vec3 position, normal, diffuse, emittance;
-    vec3 debug=vec3(0.0, 0.0, 0.0);
+    vec4 debug=vec4(0.0);
 
     // for (int depth = 0; depth < 5; ++depth) {
     //     if (intersect(origin, delta, position, normal, diffuse, emittance, debug)) {
@@ -382,9 +360,46 @@ void main(void) {
     //     }
     // }
     // Finalcolor = vec4(mix(color, texture(uTexture, vTexCoords).rgb, uTextureWeight), dist);
+
+    if(BvhBox_getIntersection(0.0, origin, delta)>0.0){
+        Finalcolor = vec3(BvhBox_getIntersection(3.0 * bvhStep, origin, delta),0.0,0.0);
+    }else{
+        Finalcolor = vec3(0.0,0.0,0.0);
+    }
+
+
+
+//     Finalcolor= vec3(
+//         // texture(bvhData, vec2(bvhStep * 3.0 + bvhStep, 0.0)).a -23.5
+//             // texture(bvhData, vec2(bvhStep * 3.0 + bvhStep, 0.0)).r
+//             // texture(bvhData, vec2(bvhStep * 3.0 + bvhStep, 0.0)).g
+
+//         // texture(bvhData, vec2(bvhStep * 3.0, 0.0)).r
+//         // texture(bvhData, vec2(bvhStep * 3.0, 0.0)).g
+//         // texture(bvhData, vec2(bvhStep * 3.0, 0.0)).b
+
+//         // texture(bvhData, vec2(bvhStep * 3.0, 0.0)).a -4.5
+//         // texture(bvhData, vec2(bvhStep * 3.0 + bvhStep, 0.0)).r -0.5
+//         // texture(bvhData, vec2(bvhStep * 3.0 + bvhStep, 0.0)).g -0.5
+
+//         texture(bvhData, vec2(bvhStep * 3.0, 0.0)).a -5.0,
+//         texture(bvhData, vec2(bvhStep * 3.0 + bvhStep, 0.0)).r,
+//         texture(bvhData, vec2(bvhStep * 3.0 + bvhStep, 0.0)).g
+//    );
+
+    // Finalcolor=vec4(
+    //     bvh_left(0.0) / 12.0,
+    //     bvh_left(0.0) / 12.0,
+    //     bvh_left(0.0) / 12.0,
+    //     1.0
+    // );
+
+    // Finalcolor = debug;
     
-    Finalcolor= vec4(1.0);
-    return;
+    // float test = texture(bvhData, vec2(1.0, 0.0)).r / 7.0;
+
+    // Finalcolor= vec4(test);
+    // return;
 
 
     // float testT = triangle_getIntersection(0,vec3(0.25,0.25,1),vec3(0,-1,0));

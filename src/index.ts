@@ -29,8 +29,8 @@ window.onload = function () {
     requestAnimationFrame(animate);
     if (count < 1) {
       renderer.render(camera);
-      console.log('render');
-      count++;
+      // console.log('render');
+      // count++;
     }
   }
   animate();

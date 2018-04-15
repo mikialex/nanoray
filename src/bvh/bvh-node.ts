@@ -40,7 +40,7 @@ export class BVHNode {
   getSubTreeNodeCount() {
     if (this.leftNode) {
       if (this._subTreeNodeCount === -1) {
-        this._subTreeNodeCount = this.leftNode.getSubTreeNodeCount() + this.leftNode.getSubTreeNodeCount() + 1;
+        this._subTreeNodeCount = this.leftNode.getSubTreeNodeCount() + this.rightNode.getSubTreeNodeCount() + 1;
       } 
       return this._subTreeNodeCount;
     } else {
