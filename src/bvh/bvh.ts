@@ -134,15 +134,22 @@ export class BVHTree {
       array.push(tri.p3.z);
       array.push(0);
 
-      array.push(0.5);
-      array.push(0.5);
-      array.push(0.5);
+      array.push(Math.random());
+      array.push(0.6);
+      array.push(1);
       array.push(0);
 
-      array.push(0);
-      array.push(0);
-      array.push(0);
-      array.push(0);
+      // if (Math.random() > 0.9) {
+      //   array.push(0.5);
+      //   array.push(0.5);
+      //   array.push(0.5);
+      //   array.push(0);
+      // } else {
+        array.push(0);
+        array.push(0);
+        array.push(0);
+        array.push(0);
+      // }
     });
     return new Float32Array(array);
   }

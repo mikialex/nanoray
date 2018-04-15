@@ -51,7 +51,7 @@ vec3 cosineSampleHemisphere(inout float seed, vec3 normal) {
     return r3 * (u * cos(r1) + cross(normal, u) * sin(r1)) + normal * sqrt(1.0 - r2);
 }
 
-const float bvhNodeNum = 5.0;
+const float bvhNodeNum = {#bvhNodeNumber#}.0;
 const float bvhsep =bvhNodeNum * 3.0;
 const float bvhStep = 1.0 / bvhsep;
 
@@ -228,17 +228,11 @@ float BvhBox_getIntersection(float bvh_node, vec3 origin, vec3 delta) {
         texture(bvhData, vec2(bvh_node, 0.0)).r,
         texture(bvhData, vec2(bvh_node, 0.0)).g,
         texture(bvhData, vec2(bvh_node, 0.0)).b
-        // 0.0,
-        // 0.0,
-        // 0.0
     );
     vec3 maxPoint = vec3(
         texture(bvhData, vec2(bvh_node, 0.0)).a,
         texture(bvhData, vec2(bvh_node + bvhStep, 0.0)).r,
         texture(bvhData, vec2(bvh_node + bvhStep, 0.0)).g
-        // 5.0,
-        // 1.0,
-        // 1.0
     );
     vec3 t0 = (minPoint - origin) / delta;
     vec3 t1 = (maxPoint - origin) / delta;
@@ -246,18 +240,25 @@ float BvhBox_getIntersection(float bvh_node, vec3 origin, vec3 delta) {
     vec3 r1 = max(t0, t1);
     float tn = max(r0.x, max(r0.y, r0.z));
     float tf = min(r1.x, min(r1.y, r1.z));
-    return (tn <= tf) && (tf > EPSILON) ? tn : -1.0;
+    // return (tn <= tf) && (tf > EPSILON) ? tn : -1.0;
+    if((tn <= tf) && (tn > EPSILON)){
+        return tn;
+    } else{
+        if((EPSILON <= tf) && (tn < 0.0)){
+            return tf;
+        } else {
+            return -1.0;
+        }
+    }
 }
 
 
 // index: index of nearest hit triangle
-float bvh_intersect(vec3 ray_o, vec3 ray_t, inout float index, inout float debug) {
-	float depth = 1.0; // intersection distance
-	index = -1.0;     //
+float bvh_intersect(vec3 ray_o, vec3 ray_t, inout float index, inout vec3 debug) {
+	float depth = 1.0; // intersection distance//
 	float bvh_node = 0.0; // current visit nodes index
 	int t = 0;    // maybe use as intersection count
 
-    float cur_index;
 	while ( bvh_node < 1.0 ) {
 		t += 1;
         float cur_depth = BvhBox_getIntersection(bvh_node, ray_o, ray_t); //   bvh box intersect test
@@ -265,14 +266,14 @@ float bvh_intersect(vec3 ray_o, vec3 ray_t, inout float index, inout float debug
         if (cur_depth < 0.0 || cur_depth > depth) {
             bvh_node = bvh_pass(bvh_node) / 4.0 * bvhStep;
         } else {
-            debug += 1.0;
+            // debug += 1.0;
             if(bvh_left(bvh_node) > 0.5){ // trunk
                 bvh_node += 3.0 * bvhStep;
             }else{ // leaf
                 for (float i = bvh_index_start(bvh_node); i < bvh_index_end(bvh_node); ++i) {
                     cur_depth = triangle_getIntersection(i, ray_o, ray_t);
                     if (cur_depth >= 0.0 && cur_depth < depth) {
-                        index = cur_index;
+                        index = i;
                         depth = cur_depth;
                     }
                 }
@@ -290,7 +291,7 @@ bool intersect(
     out vec3 normal,
     out vec3 diffuse, 
     out vec3 emittance,
-    inout float debug
+    inout vec3 debug
     ) {
 
     float hitResult = 1.0;
@@ -303,11 +304,13 @@ bool intersect(
     
 
     if (hitResult < 1.0) {
+        debug += vec3(1.0);
         Triangle triangle = getTriangle(hitIndex);
         position = origin + delta * hitResult;
         normal = triangle_getPointNormal(hitIndex, position);
         diffuse = triangle.rgb;
         emittance = triangle.lit;
+        // debug = emittance;
         return true;
     } else {
         return false;
@@ -339,7 +342,7 @@ void main(void) {
     vec3 color = vec3(0.0, 0.0, 0.0);
     vec3 reflectance = vec3(1.0, 1.0, 1.0);
     vec3 position, normal, diffuse, emittance;
-    float debug = 0.0;
+    vec3 debug = vec3(0.0);
 
     for (int depth = 0; depth < 5; ++depth) {
         if (intersect(origin, delta, position, normal, diffuse, emittance, debug)) {
@@ -359,7 +362,9 @@ void main(void) {
             break;
         }
     }
+    // gl_FragColor = vec4(mix(color, texture2D(uTexture, vTexCoords).rgb, uTextureWeight), dist);
     Finalcolor = vec4(mix(color, texture(uTexture, vTexCoords).rgb, uTextureWeight), dist);
+    // Finalcolor = debug / 5.0;
 
 
 //     float debug = 0.0;
