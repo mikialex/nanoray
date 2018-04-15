@@ -29,7 +29,7 @@ uniform float uTextureWeight;
 uniform float uFocalDistance;
 
 in vec2 vTexCoords;
-out vec3 Finalcolor;
+out vec4 Finalcolor;
 
 
 float rand(inout float seed) {
@@ -283,37 +283,36 @@ float bvh_intersect(vec3 ray_o, vec3 ray_t, inout float index, inout float debug
 	return depth;
 }
 
-// bool intersect(
-//     vec3 origin, 
-//     vec3 delta, 
-//     out vec3 position,
-//     out vec3 normal,
-//     out vec3 diffuse, 
-//     out vec3 emittance,
-//     inout vec3 debug
-//     ) {
+bool intersect(
+    vec3 origin, 
+    vec3 delta, 
+    out vec3 position,
+    out vec3 normal,
+    out vec3 diffuse, 
+    out vec3 emittance,
+    inout float debug
+    ) {
 
-//     float hitResult = 1.0;
-//     float hitIndex = 0.0;
-//     float t;
+    float hitResult = 1.0;
+    float hitIndex = 0.0;
+    float t;
 
 
 
-//     hitResult = bvh_intersect(origin,delta,hitIndex , debug);
+    hitResult = bvh_intersect(origin,delta,hitIndex , debug);
     
-//     // debug=vec4(hitIndex,hitIndex,hitIndex,0);
 
-//     if (hitResult < 1.0) {
-//         Triangle triangle = getTriangle(hitIndex);
-//         position = origin + delta * hitResult;
-//         normal = triangle_getPointNormal(hitIndex, position);
-//         diffuse = triangle.rgb;
-//         emittance = triangle.lit;
-//         return true;
-//     } else {
-//         return false;
-//     }
-// }
+    if (hitResult < 1.0) {
+        Triangle triangle = getTriangle(hitIndex);
+        position = origin + delta * hitResult;
+        normal = triangle_getPointNormal(hitIndex, position);
+        diffuse = triangle.rgb;
+        emittance = triangle.lit;
+        return true;
+    } else {
+        return false;
+    }
+}
 
 
 
@@ -340,45 +339,40 @@ void main(void) {
     vec3 color = vec3(0.0, 0.0, 0.0);
     vec3 reflectance = vec3(1.0, 1.0, 1.0);
     vec3 position, normal, diffuse, emittance;
-
-    // for (int depth = 0; depth < 5; ++depth) {
-    //     if (intersect(origin, delta, position, normal, diffuse, emittance, debug)) {
-    //         if (depth == 0) {
-    //           dist = length(position - origin);
-    //         }
-    //         color += reflectance * emittance;
-    //         reflectance *= diffuse;
-    //         origin = position + normal * EPSILON;
-    //         // if(dot(normal, delta) > 0.0){
-    //         //     normal= normal * -1.0;
-    //         // }
-    //         normal = cosineSampleHemisphere(seed, normal);
-    //         delta = normal * 100.0;
-    //     } else {
-    //         color += reflectance * bgcolor;
-    //         break;
-    //     }
-    // }
-    // Finalcolor = vec4(mix(color, texture(uTexture, vTexCoords).rgb, uTextureWeight), dist);
-
-    // float test = BvhBox_getIntersection(bvhStep * 3.0, origin, delta);
-    // if( test > 0.0){
-    //     Finalcolor = vec3(test,0.0,0.0);
-    // }else{
-    //     Finalcolor = vec3(0.0,0.0,0.0);
-    // }
-
     float debug = 0.0;
-    float hitIndex = 0.0;
-    bvh_intersect(origin, delta, hitIndex , debug);
 
-    Finalcolor= vec3(
-        debug / 4.0
+    for (int depth = 0; depth < 5; ++depth) {
+        if (intersect(origin, delta, position, normal, diffuse, emittance, debug)) {
+            if (depth == 0) {
+              dist = length(position - origin);
+            }
+            color += reflectance * emittance;
+            reflectance *= diffuse;
+            origin = position + normal * EPSILON;
+            // if(dot(normal, delta) > 0.0){
+            //     normal= normal * -1.0;
+            // }
+            normal = cosineSampleHemisphere(seed, normal);
+            delta = normal * 100.0;
+        } else {
+            color += reflectance * bgcolor;
+            break;
+        }
+    }
+    Finalcolor = vec4(mix(color, texture(uTexture, vTexCoords).rgb, uTextureWeight), dist);
 
-        // texture(bvhData, vec2(bvhStep * 3.0, 0.0)).a -5.0,
-        // texture(bvhData, vec2(bvhStep * 3.0 + bvhStep, 0.0)).r,
-        // texture(bvhData, vec2(bvhStep * 3.0 + bvhStep, 0.0)).g
-   );
+
+//     float debug = 0.0;
+//     float hitIndex = 0.0;
+//     bvh_intersect(origin, delta, hitIndex , debug);
+
+//     Finalcolor= vec3(
+//         debug / 4.0
+
+//         // texture(bvhData, vec2(bvhStep * 3.0, 0.0)).a -5.0,
+//         // texture(bvhData, vec2(bvhStep * 3.0 + bvhStep, 0.0)).r,
+//         // texture(bvhData, vec2(bvhStep * 3.0 + bvhStep, 0.0)).g
+//    );
 
     // Finalcolor=vec4(
     //     bvh_left(0.0) / 12.0,
