@@ -34,7 +34,7 @@ export class WebglRenderer {
     console.log(this.gl);
 
     //https://developer.mozilla.org/en-US/docs/Web/API/OES_texture_float
-    this.gl.getExtension('OES_texture_float');
+    this.gl.getExtension('EXT_color_buffer_float');
     this.gl.viewport(0, 0, this.gl.drawingBufferWidth, this.gl.drawingBufferHeight);
   }
 
@@ -196,7 +196,6 @@ export class WebglRenderer {
     this.uTextureTrace.setData(0, DataType.uniform1i);
     this.utrianglesData.setData(1, DataType.uniform1i);
     this.uBvhData.setData(2, DataType.uniform1i);
-    // this.uTextureRender.setData(1, DataType.uniform1i);
 
 
     this.gl.activeTexture(this.gl.TEXTURE0);
@@ -222,7 +221,7 @@ export class WebglRenderer {
 
 
 
-    //交换缓冲区 用以显示前一次光线跟踪的结果
+    // 交换缓冲区 用以显示前一次光线跟踪的结果
     this.textures.reverse();
 
 
