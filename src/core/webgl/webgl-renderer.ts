@@ -93,7 +93,7 @@ export class WebglRenderer {
     scene.addPrimitive(new Primitive(
       new Triangle(
         new Vector3(0, 0, 0),
-        new Vector3(0, 1, 0),
+        new Vector3(0.5, 1, 0),
         new Vector3(0, 0, 1),
       ), new SimpleMaterial(new Vector3(1, 0, 0), new Vector3(0, 0, 0))));
     scene.addPrimitive(new Primitive(

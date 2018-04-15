@@ -93,6 +93,7 @@ export class BVHTree {
         node.leftNode ? offset + node.leftNode.getSubTreeNodeCount() * 12 : 0,
         
         // split,
+        // node.parent ? offset + node.getSubTreeNodeCount() * 12 : (node.getSubTreeNodeCount() - 1) * 12,
         offset + node.getSubTreeNodeCount() * 12,
         start,
         end,
