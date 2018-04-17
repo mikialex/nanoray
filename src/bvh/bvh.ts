@@ -18,6 +18,12 @@ export interface Raw {
 }
 
 export const maxDepth = 10;
+
+export const dataRowWidthNode = 1000; // each row has how many node
+export const bvhSingleNodeDataWidth = 12;  // each bvhnode need 20 float
+export const bvhPackedSingleNodePixelDataWidth = bvhSingleNodeDataWidth / 4; // 3(rgba),using rgba, each bvhnode need 5 pixel
+export const dataRowWidthPixel = dataRowWidthNode * bvhPackedSingleNodePixelDataWidth;
+
 export class BVHTree {
   root: BVHNode;
   itemList: Raw[]
@@ -50,7 +56,7 @@ export class BVHTree {
   generateFlattenList() {
     let flattenList = [];
     function pushNode(tree: BVHTree,flattenList, node: BVHNode, offset) {
-      node.offset = offset;
+      node.offset = offset / bvhSingleNodeDataWidth;
       let split = 0;
       if (node.splitAxis = Axis.Y) {
         split = 1;
@@ -71,30 +77,20 @@ export class BVHTree {
         end = 0;
       }
 
-      // if (node.parent !== null) {
-      //   if (node.isSelfLeft) {
-      //     flattenList[flattenList.length - 5] = offset;
-      //   } else {
-      //     flattenList[flattenList.length - 4] = offset;
-      //   }
-      // }
       const nodeInfo = [
         
         node.aabbMin.x,
         node.aabbMin.y,
         node.aabbMin.z,
-
         node.aabbMax.x,
+
         node.aabbMax.y,
         node.aabbMax.z,
-
         (node.parent !== null) ? node.parent.offset : 0,
-        node.leftNode ? offset + 12 : 0,
-        node.leftNode ? offset + node.leftNode.getSubTreeNodeCount() * 12 : 0,
+        node.leftNode ? node.offset + 1 : 0,
         
-        // split,
-        // node.parent ? offset + node.getSubTreeNodeCount() * 12 : (node.getSubTreeNodeCount() - 1) * 12,
-        offset + node.getSubTreeNodeCount() * 12,
+        node.leftNode ? node.offset + node.leftNode.getSubTreeNodeCount() : 0,
+        node.offset + node.getSubTreeNodeCount(),
         start,
         end,
       ]  
@@ -112,8 +108,28 @@ export class BVHTree {
   }
 
   BVHToDataArray() {
+    this.bvhNodeNumber = this.flattenList.length / bvhSingleNodeDataWidth;
+    this.bvhRowCount = Math.floor(this.bvhNodeNumber / dataRowWidthNode) + 1;
+    this.bvhListLengthAll = this.bvhRowCount * bvhPackedSingleNodePixelDataWidth * dataRowWidthNode;
+
+    let fillNumber = (this.bvhListLengthAll - this.bvhNodeNumber * bvhPackedSingleNodePixelDataWidth) * 4;
+    console.log(this.bvhNodeNumber);
+    console.log(this.bvhRowCount);
+    console.log(this.bvhListLengthAll);
+    console.log(fillNumber);
+    for (let i = 0; i < fillNumber; i++) {
+      this.flattenList.push(0);
+      this.flattenList.push(0);
+      this.flattenList.push(0);
+      this.flattenList.push(0);
+    }
     return new Float32Array(this.flattenList);
   }
+
+  bvhListLengthAll = 0;
+  bvhRowCount = 0;
+  bvhNodeNumber = 0;
+  
 
   BVHTriangleToDataArray() {
     let array = [];
@@ -134,9 +150,14 @@ export class BVHTree {
       array.push(tri.p3.z);
       array.push(0);
 
-      array.push(Math.random());
-      array.push(0.6);
-      array.push(1);
+      // array.push(Math.random());
+      // array.push(0.6);
+      // array.push(1);
+      // array.push(0);
+
+      array.push(0.8);
+      array.push(0.8);
+      array.push(0.8);
       array.push(0);
 
       // if (Math.random() > 0.9) {
@@ -151,43 +172,25 @@ export class BVHTree {
         array.push(0);
       // }
     });
+
+    // this.bvhNodeNumber = array.length / 4
+    // this.bvhRowCount = Math.floor(this.bvhNodeNumber / dataRowWidthNode) + 1;
+    // this.bvhListLengthAll = this.bvhRowCount * dataRowWidthNode;
+
+    // let fillNumber = this.bvhListLengthAll - this.bvhNodeNumber;
+    // console.log(this.bvhNodeNumber);
+    // console.log(this.bvhRowCount);
+    // console.log(this.bvhListLengthAll);
+    // console.log(fillNumber);
+    // for (let i = 0; i < fillNumber; i++) {
+    //   array.push(0);
+    //   array.push(0);
+    //   array.push(0);
+    //   array.push(0);
+    // }
+
     return new Float32Array(array);
   }
-
-
-  // addHelperToScene(scene) { 
-  //   function addHelpBox(node: BVHNode, scene: Object3D) {
-  //     if (node.inuse) {
-  //       const x = node.aabbMax.x - node.aabbMin.x;
-  //       const y = node.aabbMax.y - node.aabbMin.y;
-  //       const z = node.aabbMax.z - node.aabbMin.z;
-  //       const box = new BoxGeometry(x, y, z);
-  //       let mat;
-  //       if (!node.leftNode && !node.rightNode) {
-  //         mat = new MeshBasicMaterial({ color: 0x000000, opacity: 0.5 ,transparent:true});
-  //       } else if(node.leftNode.inuse && node.rightNode.inuse) {
-  //         mat = new MeshBasicMaterial({ color: 0x000000, wireframe: true, opacity: 0.5 });
-  //       } else {
-  //         mat = new MeshBasicMaterial({ color: 0x000000, opacity: 0.5, transparent: true });
-  //       }
-  //       const boxMesh = new Mesh(box, mat);
-  //       boxMesh.position.set(node.center.x, node.center.y, node.center.z);
-  //       scene.add(boxMesh);
-  //       if (node.leftNode) {
-  //         addHelpBox(node.leftNode, scene);
-  //       }
-  //       if (node.rightNode) {
-  //         addHelpBox(node.rightNode, scene);
-  //       }
-  //     }
-  //   }
-
-  //   if (this.root) {
-  //     const group = new Group();
-  //     scene.add(group)
-  //     addHelpBox(this.root, group);
-  //   }
-  // }
 
 }
 

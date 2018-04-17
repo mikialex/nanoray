@@ -3,6 +3,8 @@ import { WebglRenderer } from './core/webgl/webgl-renderer'
 import { Camera } from './core/camera';
 import { CameraControler } from './core/camera-controler';
 
+declare var Stats;
+
 window.onload = function () {
   let renderer = new WebglRenderer(document.getElementById('canvas') as HTMLCanvasElement);
   renderer.prepare();
@@ -20,18 +22,23 @@ window.onload = function () {
   renderer.render(camera);
 
 
+  var stats = new Stats();
+  stats.showPanel(1); // 0: fps, 1: ms, 2: mb, 3+: custom
+  document.body.appendChild(stats.dom);
 
-
-
-  let count = 0;
+  let sampleLimit = false;
+  let maxSample = 1000;
+  let currentSample = 0;
 
   function animate() {
-    requestAnimationFrame(animate);
-    if (count < 1) {
+    if (currentSample < maxSample || !sampleLimit) {
+      stats.begin();
       renderer.render(camera);
+      stats.end();
       // console.log('render');
-      // count++;
+      currentSample++;
     }
+    requestAnimationFrame(animate);
   }
   animate();
 

@@ -14,11 +14,14 @@ export class ObjFileLoader{
       if (row.length > 1) {
         if (row[0] === 'v') {
           let temp = row.split(' ');
-          console.log(temp);
           vertice.push(new Vector3(Number(temp[1]), Number(temp[2]), Number(temp[3])));
         } else if (row[0] === 'f') {
           let temp = row.split(' ');
           temp = temp.slice(1, temp.length);
+          temp = temp.map(item => {
+            let num = item.split('/');
+            return num[0];
+          })
           if (temp.length === 3) {
             triangles.push(new Vector3(Number(temp[0]), Number(temp[1]), Number(temp[2])));
           } else {

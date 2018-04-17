@@ -10,7 +10,8 @@ import { sceneJson } from '../../scene/box-scene-o'
 import { triangleSceneJson } from '../../scene/triangle-scene'
 import { Scene } from "../scene";
 
-import { test } from '../../loader/test-obj';
+import { test } from '../../loader/monkey-head';
+
 import { Vector3 } from "../../math/vector3";
 import { GLProgram } from "./webgl-program";
 import { GLAttribute } from "./webgl-attribute";
@@ -21,7 +22,7 @@ import { ObjFileLoader } from "../../loader/obj-loader";
 import { Primitive } from "../primitive";
 import { Triangle } from "../../geometry/triangle";
 import { SimpleMaterial } from "../../material/simple-material";
-import { BVHTree } from "../../bvh/bvh";
+import { BVHTree, dataRowWidthNode, bvhPackedSingleNodePixelDataWidth, dataRowWidthPixel } from "../../bvh/bvh";
 
 
 
@@ -121,19 +122,8 @@ export class WebglRenderer {
     this.trianglesData = createTexture(this.gl, triangle, 1, this.gl.RGBA, this.gl.RGBA32F, this.gl.FLOAT, tridataArray);
 
     let bvhdataArray = testBvh.BVHToDataArray();
-    // bvhdataArray[0] = 0;
-    // bvhdataArray[1] = 1;
-    // bvhdataArray[2] = 2;
-    // bvhdataArray[3] = 30;
-    // bvhdataArray[4] = 4;
-    // bvhdataArray[5] = 5;
-    // bvhdataArray[6] = 6;
-    // bvhdataArray[7] = 7;
-    // bvhdataArray[8] = 8;
-    // bvhdataArray[9] = 9;
     console.log('bvh data in shader', bvhdataArray);
-    let bvhd = bvhdataArray.length / 4
-    this.bvhData = createTexture(this.gl, bvhd, 1, this.gl.RGBA, this.gl.RGBA32F, this.gl.FLOAT, bvhdataArray);
+    this.bvhData = createTexture(this.gl, dataRowWidthPixel, testBvh.bvhRowCount, this.gl.RGBA, this.gl.RGBA32F, this.gl.FLOAT, bvhdataArray);
 
     let renderVertexS = new GLShader(this);
     renderVertexS.compileRawShader(renderVertexShader, ShaderType.vertex);
@@ -145,8 +135,13 @@ export class WebglRenderer {
     let traceVertexS = new GLShader(this);
     traceVertexS.compileRawShader(tracerVertexShader, ShaderType.vertex);
     let traceFragmentS = new GLShader(this);
+    console.log('packed triangle num:' + triangle / 5);
     tracerFragmentShader = tracerFragmentShader.replace(/{#triangleNumber#}/g, triangle / 5);
-    tracerFragmentShader = tracerFragmentShader.replace(/{#bvhNodeNumber#}/g, bvhd / 3);
+    console.log('packed bvhNode num:' + testBvh.bvhNodeNumber);
+    console.log('packed bvhNode map w*h:' + dataRowWidthNode + ' ' + testBvh.bvhRowCount); 
+    tracerFragmentShader = tracerFragmentShader.replace(/{#bvhNodeNumber#}/g, testBvh.bvhNodeNumber);
+    tracerFragmentShader = tracerFragmentShader.replace(/{#bvhNodeRowNumber#}/g, testBvh.bvhRowCount);
+    tracerFragmentShader = tracerFragmentShader.replace(/{#bvhWidthNodeNum#}/g, dataRowWidthNode);
     traceFragmentS.compileRawShader(tracerFragmentShader, ShaderType.fragment);
     this.traceProgram = new GLProgram(this, traceVertexS, traceFragmentS);
 
