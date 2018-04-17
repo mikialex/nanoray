@@ -22,7 +22,7 @@ import { ObjFileLoader } from "../../loader/obj-loader";
 import { Primitive } from "../primitive";
 import { Triangle } from "../../geometry/triangle";
 import { SimpleMaterial } from "../../material/simple-material";
-import { BVHTree, dataRowWidthNode, bvhPackedSingleNodePixelDataWidth, dataRowWidthPixel } from "../../bvh/bvh";
+import { BVHTree, dataRowWidthNode, bvhPackedSingleNodePixelDataWidth, dataRowWidthPixel, dataRowWidthPixelTriangle, dataRowWidthTriangle } from "../../bvh/bvh";
 
 
 
@@ -118,8 +118,8 @@ export class WebglRenderer {
 
     let tridataArray = testBvh.BVHTriangleToDataArray();
     console.log('triangle data in shader', tridataArray);
-    let triangle = tridataArray.length / 4
-    this.trianglesData = createTexture(this.gl, triangle, 1, this.gl.RGBA, this.gl.RGBA32F, this.gl.FLOAT, tridataArray);
+    console.log(dataRowWidthPixelTriangle);
+    this.trianglesData = createTexture(this.gl, dataRowWidthPixelTriangle, testBvh.triangleRowCount, this.gl.RGBA, this.gl.RGBA32F, this.gl.FLOAT, tridataArray);
 
     let bvhdataArray = testBvh.BVHToDataArray();
     console.log('bvh data in shader', bvhdataArray);
@@ -135,8 +135,10 @@ export class WebglRenderer {
     let traceVertexS = new GLShader(this);
     traceVertexS.compileRawShader(tracerVertexShader, ShaderType.vertex);
     let traceFragmentS = new GLShader(this);
-    console.log('packed triangle num:' + triangle / 5);
-    tracerFragmentShader = tracerFragmentShader.replace(/{#triangleNumber#}/g, triangle / 5);
+    console.log('packed triangle num:' + testBvh.triangleNum);
+    console.log('packed triangle map w*h:' + dataRowWidthTriangle + ' ' + testBvh.triangleRowCount); 
+    tracerFragmentShader = tracerFragmentShader.replace(/{#triangleWidthNumber#}/g, dataRowWidthTriangle);
+    tracerFragmentShader = tracerFragmentShader.replace(/{#triHeightNumber#}/g, testBvh.triangleRowCount);
     console.log('packed bvhNode num:' + testBvh.bvhNodeNumber);
     console.log('packed bvhNode map w*h:' + dataRowWidthNode + ' ' + testBvh.bvhRowCount); 
     tracerFragmentShader = tracerFragmentShader.replace(/{#bvhNodeNumber#}/g, testBvh.bvhNodeNumber);

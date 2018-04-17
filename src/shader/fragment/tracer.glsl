@@ -50,13 +50,16 @@ vec3 cosineSampleHemisphere(inout float seed, vec3 normal) {
     return r3 * (u * cos(r1) + cross(normal, u) * sin(r1)) + normal * sqrt(1.0 - r2);
 }
 
-const float triNum = {#triangleNumber#}.0;
-const float sep =triNum * 5.0 - 0.001;
+const float triNum = {#triangleWidthNumber#}.0;
+const float sep = triNum * 5.0 - 0.001;
 const float u1 = 1.0 / sep;
 const float u2 = 2.0 / sep;
 const float u3 = 3.0 / sep;
 const float u4 = 4.0 / sep;
 const float u5 = 5.0 / sep;
+
+const float triHeightNumber = {#triHeightNumber#}.0;
+const float triHeightNumberReverse = 1.0 / triHeightNumber;
 
 struct Triangle {
     vec3 p1;
@@ -68,12 +71,18 @@ struct Triangle {
 };
 
 Triangle getTriangle(float index) {
-    float u = float(index) * u5;
-    return Triangle(texture(trianglesData, vec2(u, 0.0)).rgb,
-                    texture(trianglesData, vec2(u + u1, 0.0)).rgb,
-                    texture(trianglesData, vec2(u + u2, 0.0)).rgb,
-                    texture(trianglesData, vec2(u + u3, 0.0)).rgb,
-                    texture(trianglesData, vec2(u + u4, 0.0)).rgb
+
+    // float u = index * u5;
+
+    float l = index * 5. * u1;
+    float x = fract(l);
+    float y = floor(l) * triHeightNumberReverse;
+
+    return Triangle(texture(trianglesData, vec2(x, y)).rgb,
+                    texture(trianglesData, vec2(x + u1, y)).rgb,
+                    texture(trianglesData, vec2(x + u2, y)).rgb,
+                    texture(trianglesData, vec2(x + u3, y)).rgb,
+                    texture(trianglesData, vec2(x + u4, y)).rgb
                     );
 }
 
@@ -336,48 +345,10 @@ void main(void) {
         }
     }
     Finalcolor = vec4(mix(color, texture(uTexture, vTexCoords).rgb, uTextureWeight), dist);
-
+    // Finalcolor=vec4(vec3(1.),1.);
     
     // Finalcolor = vec3(texture(bvhData, vec2(0.0 + bvhStep * 1.0 , 0.0)).r ) / 40.0;
     // Finalcolor = vec3(bvh_pass(200.0) - 2400.5) / 1.0;
 
-
-
-//     float debug = 0.0;
-//     float hitIndex = 0.0;
-//     bvh_intersect(origin, delta, hitIndex , debug);
-
-//     Finalcolor= vec3(
-//         debug / 4.0
-
-//         // texture(bvhData, vec2(bvhStep * 3.0, 0.0)).a -5.0,
-//         // texture(bvhData, vec2(bvhStep * 3.0 + bvhStep, 0.0)).r,
-//         // texture(bvhData, vec2(bvhStep * 3.0 + bvhStep, 0.0)).g
-//    );
-
-    // Finalcolor=vec4(
-    //     bvh_left(0.0) / 12.0,
-    //     bvh_left(0.0) / 12.0,
-    //     bvh_left(0.0) / 12.0,
-    //     1.0
-    // );
-
-    // Finalcolor = debug;
-    
-    // float test = texture(bvhData, vec2(1.0, 0.0)).r / 7.0;
-
-    // Finalcolor= vec4(test);
-    // return;
-
-
-    // float testT = triangle_getIntersection(0,vec3(0.25,0.25,1),vec3(0,-1,0));
-    // Triangle triangle = getTriangle(0);
-    // debug=vec3(testT/ 100000.0,testT,testT);
-    // color = debug;
-    // gl_FragColor = vec4(color.rgb, 1);
-
-    // gl_FragColor = vec4(texture(bvhData, vec2(1.0, 0.0)).r * 0.1,
-    // texture(bvhData, vec2(1.0, 0.0)).r * 0.1,
-    // texture(bvhData, vec2(1.0, 0.0)).r * 0.1, 1);
 
 }

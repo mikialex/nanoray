@@ -20,9 +20,14 @@ export interface Raw {
 export const maxDepth = 10;
 
 export const dataRowWidthNode = 1000; // each row has how many node
-export const bvhSingleNodeDataWidth = 12;  // each bvhnode need 20 float
-export const bvhPackedSingleNodePixelDataWidth = bvhSingleNodeDataWidth / 4; // 3(rgba),using rgba, each bvhnode need 5 pixel
-export const dataRowWidthPixel = dataRowWidthNode * bvhPackedSingleNodePixelDataWidth;
+export const bvhSingleNodeDataWidth = 12;  // each bvhnode need 12 float
+export const bvhPackedSingleNodePixelDataWidth = bvhSingleNodeDataWidth / 4; // 3(rgba),using rgba, each bvhnode need 3 pixel
+export const dataRowWidthPixel = dataRowWidthNode * bvhPackedSingleNodePixelDataWidth; // how many pixel in one row
+
+export const dataRowWidthTriangle = 500; // each row has how many triangle
+export const singleTriangleDataWidth = 20;  // each triangle need 20 float
+export const PackedSingleTrianglePixelDataWidth = singleTriangleDataWidth / 4; // 5(rgba),using rgba, each triangle need 5 pixel
+export const dataRowWidthPixelTriangle = dataRowWidthTriangle * PackedSingleTrianglePixelDataWidth; // how many pixel in one row
 
 export class BVHTree {
   root: BVHNode;
@@ -129,7 +134,10 @@ export class BVHTree {
   bvhListLengthAll = 0;
   bvhRowCount = 0;
   bvhNodeNumber = 0;
-  
+
+  triangleNum = 0;
+  triangleRowCount = 0;
+  triangleListLengthAll = 0;
 
   BVHTriangleToDataArray() {
     let array = [];
@@ -173,21 +181,20 @@ export class BVHTree {
       // }
     });
 
-    // this.bvhNodeNumber = array.length / 4
-    // this.bvhRowCount = Math.floor(this.bvhNodeNumber / dataRowWidthNode) + 1;
-    // this.bvhListLengthAll = this.bvhRowCount * dataRowWidthNode;
+    this.triangleNum = this.triangBVHList.length;
+    this.triangleRowCount = Math.floor(this.triangleNum / dataRowWidthTriangle) + 1;
+    this.triangleListLengthAll = this.triangleRowCount * PackedSingleTrianglePixelDataWidth * dataRowWidthTriangle;
 
-    // let fillNumber = this.bvhListLengthAll - this.bvhNodeNumber;
-    // console.log(this.bvhNodeNumber);
-    // console.log(this.bvhRowCount);
-    // console.log(this.bvhListLengthAll);
-    // console.log(fillNumber);
-    // for (let i = 0; i < fillNumber; i++) {
-    //   array.push(0);
-    //   array.push(0);
-    //   array.push(0);
-    //   array.push(0);
-    // }
+    let fillNumber = (this.triangleListLengthAll - this.triangleNum * PackedSingleTrianglePixelDataWidth) * 4;
+    console.log(this.triangleNum);
+    console.log(this.triangleRowCount);
+    console.log(this.triangleListLengthAll);
+    console.log(fillNumber);
+    for (let i = 0; i < fillNumber; i++) {
+      for (let j = 0; j < 20; j++) {
+        array.push(0);
+      }
+    }
 
     return new Float32Array(array);
   }
