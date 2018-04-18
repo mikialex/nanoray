@@ -77,9 +77,9 @@ export class WebglRenderer {
   uTextureWeight
   uFocalDistance
 
-  prepare() {
+  prepare(objstr) {
     let scene = new Scene();
-    ObjFileLoader.loadFromObjString(test, scene);
+    ObjFileLoader.loadFromObjString(objstr, scene);
     let dataArray = scene.toDataArray();
     dataArray = dataArray.concat([
       100, 0, 0, 0,

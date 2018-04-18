@@ -7,7 +7,6 @@ declare var Stats;
 
 window.onload = function () {
   let renderer = new WebglRenderer(document.getElementById('canvas') as HTMLCanvasElement);
-  renderer.prepare();
 
 
 
@@ -17,9 +16,6 @@ window.onload = function () {
 
   let cameraControler = new CameraControler(camera);
   cameraControler.mount();
-
-  // renderer.addCamera(camera);
-  renderer.render(camera);
 
 
   var stats = new Stats();
@@ -40,9 +36,24 @@ window.onload = function () {
     }
     requestAnimationFrame(animate);
   }
-  animate();
 
+  document.querySelector('#file').addEventListener('change', event => {
+    function getString(file: any) {
+      const reader = new FileReader();
+      return new Promise(function (resolve, reject) {
+        reader.onload = function (e) {
+          // resolve(JSON.parse((e.target as FileReader).result));
+          resolve((e.target as FileReader).result);
+        };
+        reader.readAsText(file);
+      });
+    }
+    getString((event.target as any).files[0]).then(objstr => {
+      renderer.prepare(objstr);
+      animate();
+    })
 
+  })
 
 
 
