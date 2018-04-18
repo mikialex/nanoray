@@ -121,24 +121,24 @@ export class CameraControler {
   }
 
 
-  mount() {
-    window.addEventListener("mousedown", e => {
+  mount(element:HTMLElement) {
+    element.addEventListener("mousedown", e => {
       if (e.button === 0) {
         this.mouseDown();
       }
     });
 
-    window.addEventListener("mouseup", () => {
+    element.addEventListener("mouseup", () => {
       this.mouseUp();
     });
 
-    window.addEventListener("mousemove",  e => {
+    element.addEventListener("mousemove",  e => {
       if (this.mouseMove(e.clientX, e.clientY)) {
         this.renderer.sampleCount = 0;
       }
     });
 
-    window.addEventListener("dblclick", e=> {
+    element.addEventListener("dblclick", e=> {
       var x = Math.floor(this.renderer.gl.drawingBufferWidth * e.clientX / (e.target as HTMLElement).clientWidth);
       var y = Math.floor(this.renderer.gl.drawingBufferHeight * e.clientY / (e.target as HTMLElement).clientHeight);
       var pixels = new Float32Array(this.renderer.gl.drawingBufferWidth * this.renderer.gl.drawingBufferHeight * 4);
@@ -149,13 +149,13 @@ export class CameraControler {
       this.renderer.sampleCount = 0;
     });
 
-    window.addEventListener("keydown", e=> {
+    element.addEventListener("keydown", e=> {
       if (this.keyDown(String.fromCharCode(e.keyCode).toLowerCase())) {
         this.renderer.sampleCount = 0;
       }
     });
 
-    window.addEventListener("keyup", e=> {
+    element.addEventListener("keyup", e=> {
       if (this.keyUp(String.fromCharCode(e.keyCode).toLowerCase())) {
         this.renderer.sampleCount = 0;
       }

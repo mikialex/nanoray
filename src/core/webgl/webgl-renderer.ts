@@ -1,4 +1,4 @@
-import { Camera } from "../camera";
+import { Camera, threeToMatrix } from "../camera";
 declare var require: any;
 let renderVertexShader = require('../../shader/vertex/render.glsl');
 let renderFragmenShader = require('../../shader/fragment/render.glsl');
@@ -183,12 +183,12 @@ export class WebglRenderer {
 
 
 
-  render(camera: Camera) {
-    if (!camera.controler.renderer) {
-      console.log(camera.controler)
-      camera.controler.renderer = this;
-    }
-    camera.controler.update(1.0, 0.1);
+  render(camera) {
+    // if (!camera.controler.renderer) {
+    //   console.log(camera.controler)
+    //   camera.controler.renderer = this;
+    // }
+    // camera.controler.update(1.0, 0.1);
 
 
     //运行光线跟踪着色器program
@@ -198,8 +198,17 @@ export class WebglRenderer {
     this.uTextureWeight.setData(this.sampleCount / ++this.sampleCount, DataType.uniform1f);
     this.uFocalDistance.setData(this.focalDistance, DataType.uniform1f);
 
-    this.uOrigin.setData(camera.eye, DataType.uniform3fv);
-    this.uMatrix.setData(camera.matrix, DataType.uniformMatrix4fv);
+    console.log(camera);
+    let eyePostion = new Float32Array([camera.position.x, camera.position.y, camera.position.z]);
+    // let projectionMatrix = new Float32Array(camera.projectionMatrix.clone().multiply(camera.matrixWorld).elements);
+    // let projectionMatrix = new Float32Array(camera.matrixWorld.clone().multiply(camera.projectionMatrix).elements);
+    let projectionMatrix = new Float32Array(threeToMatrix(camera));
+    // console.log(camera.matrixWorld.clone().multiply(camera.projectionMatrix).elements);
+    // console.log(threeToMatrix(camera));
+    this.uOrigin.setData(eyePostion, DataType.uniform3fv);
+    this.uMatrix.setData(projectionMatrix, DataType.uniformMatrix4fv);
+    // this.uOrigin.setData(camera.eye, DataType.uniform3fv);
+    // this.uMatrix.setData(camera.matrix, DataType.uniformMatrix4fv);
 
     this.uTextureTrace.setData(0, DataType.uniform1i);
     this.utrianglesData.setData(1, DataType.uniform1i);

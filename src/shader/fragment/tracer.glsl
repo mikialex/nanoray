@@ -317,7 +317,7 @@ void main(void) {
     vec3 position, normal, diffuse, emittance;
     vec3 debug = vec3(0.0);
 
-    for (int depth = 0; depth < 5; ++depth) {
+    for (int depth = 0; depth < 3; ++depth) {
         if (intersect(origin, delta, position, normal, diffuse, emittance, debug)) {
             if (depth == 0) {
               dist = length(position - origin);

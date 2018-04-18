@@ -15,7 +15,7 @@ export class Camera {
   //焦距
   fieldOfView = Math.PI / 4.0;
   //长宽比
-  aspectRatio = 1;
+  aspectRatio = 500 / 250;
   //近裁剪面距离
   nearPlane = 1;
   //远裁剪面距离
@@ -39,7 +39,7 @@ export class Camera {
   }
 
   update() {
-    document.querySelector('#camera').innerHTML =
+    document.querySelector('#camera').textContent =
       `camera position: ${this.eye[0]} , ${this.eye[1]}, ${this.eye[2]}<br>
       look at :  ${this.center[0]} , ${this.center[1]}, ${this.center[2]}
       `
@@ -75,4 +75,57 @@ export class Camera {
     this.matrix[14] = this.eye[2] * fn - z2 * lz;
     this.matrix[15] = fn;
   }
+}
+
+declare var THREE;
+
+export function threeToMatrix(camera) {
+  var pLocal = new THREE.Vector3(0, 0, -1);
+  var pWorld = pLocal.applyMatrix4(camera.matrixWorld);
+  return matrix(
+    [camera.position.x, camera.position.y, camera.position.z],
+    [pLocal.x, pLocal.y, pLocal.z],
+    Math.PI * camera.fov / 180,
+    camera.aspect,
+    camera.near,
+    camera.far,
+    [0.0, 1.0, 0.0]
+  )
+}
+
+function matrix(eye, center, fieldOfView, aspectRatio, near, far, up) {
+  var matrix = [];
+  matrix.length = 16;
+  var tan = Math.tan(fieldOfView / 2.0);
+  var nf = (near - far) / (2.0 * far * near);
+  var fn = (far + near) / (2.0 * far * near);
+  var z0 = eye[0] - center[0];
+  var z1 = eye[1] - center[1];
+  var z2 = eye[2] - center[2];
+  var lz = 1.0 / Math.sqrt(z0 * z0 + z1 * z1 + z2 * z2);
+  var x0 = up[1] * z2 - up[2] * z1;
+  var x1 = up[2] * z0 - up[0] * z2;
+  var x2 = up[0] * z1 - up[1] * z0;
+  var lx = tan * aspectRatio / Math.sqrt(x0 * x0 + x1 * x1 + x2 * x2);
+  var y0 = z1 * x2 - z2 * x1;
+  var y1 = z2 * x0 - z0 * x2;
+  var y2 = z0 * x1 - z1 * x0;
+  var ly = tan / Math.sqrt(y0 * y0 + y1 * y1 + y2 * y2);
+  matrix[0] = x0 * lx;
+  matrix[1] = x1 * lx;
+  matrix[2] = x2 * lx;
+  matrix[3] = 0.0;
+  matrix[4] = y0 * ly;
+  matrix[5] = y1 * ly;
+  matrix[6] = y2 * ly;
+  matrix[7] = 0.0;
+  matrix[8] = eye[0] * nf;
+  matrix[9] = eye[1] * nf;
+  matrix[10] = eye[2] * nf;
+  matrix[11] = nf;
+  matrix[12] = eye[0] * fn - z0 * lz;
+  matrix[13] = eye[1] * fn - z1 * lz;
+  matrix[14] = eye[2] * fn - z2 * lz;
+  matrix[15] = fn;
+  return matrix;
 }

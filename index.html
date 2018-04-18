@@ -5,21 +5,53 @@
 </head>
 
 <body>
-  <script src="./stat.js"></script>
+  <script src="./static/three.min.js"></script>
+  <script src="./static/stat.js"></script>
+  <script src="./static/OBJLoader.js"></script>
+  <script src="./static/OrbitControls.js"></script>
   <style>
     body {
       margin: 0px;
     }
 
     #canvas {
-      width: 100%;
+      width: 500px;
+      height: 250px;
       /* height: 450px; */
       background: #eee;
+      margin:20px;
+    }
+
+    #three {
+      width: 500px;
+      height: 250px;
+      /* height: 450px; */
+      background: #eee;
+      margin:20px;
     }
   </style>
-  <canvas id="canvas" width="1000" height="500" tabindex="-1"></canvas>
-  <input type="file" id="file">
-  <span id="camera"></span>
+
+  <div style="display: flex">
+    <div>
+      <div class="trace-container">
+        <canvas id="canvas" width="1000" height="500" tabindex="-1">
+        </canvas>
+      </div>
+      <div class="three-container">
+        <canvas id="three" width="1000" height="500" tabindex="-1">
+        </canvas>
+      </div>
+    </div>
+    <!-- <div>
+      <input type="file" id="file">
+      <span id="camera"></span>
+    </div> -->
+  </div>
+  <div>
+    <button id="stop">stop</button>
+    <input type="file" id="file">
+    <span id="camera"></span>
+  </div>
 </body>
 
 </html>
