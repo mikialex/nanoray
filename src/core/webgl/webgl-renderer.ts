@@ -18,7 +18,7 @@ import { GLAttribute } from "./webgl-attribute";
 import { GLUniform, DataType } from "./webgl-uniform";
 import { GLShader, ShaderType } from "./webgl-shader";
 import { createTexture } from "./webgl-texture";
-import { ObjFileLoader } from "../../loader/obj-loader";
+// import { ObjFileLoader } from "../../loader/obj-loader";
 import { Primitive } from "../primitive";
 import { Triangle } from "../../geometry/triangle";
 import { SimpleMaterial } from "../../material/simple-material";
@@ -77,39 +77,11 @@ export class WebglRenderer {
   uTextureWeight
   uFocalDistance
 
-  prepare(objstr) {
+  prepare(obj) {
     let scene = new Scene();
-    ObjFileLoader.loadFromObjString(objstr, scene);
-    let dataArray = scene.toDataArray();
-    dataArray = dataArray.concat([
-      100, 0, 0, 0,
-      0, 100, 0, 0,
-      0, 0, 100, 0,
-      1, 1, 1, 1,
-      1, 1, 1, 1
-    ]);
-
-    var data = new Float32Array(dataArray);
+    scene.getObject(obj);
+    // ObjFileLoader.loadFromObjString(objstr, scene);
     console.log('scene', scene);
-
-    // scene.addPrimitive(new Primitive(
-    //   new Triangle(
-    //     new Vector3(0, 0, 0),
-    //     new Vector3(0.5, 1, 0),
-    //     new Vector3(0, 0, 1),
-    //   ), new SimpleMaterial(new Vector3(1, 0, 0), new Vector3(0, 0, 0))));
-    // scene.addPrimitive(new Primitive(
-    //   new Triangle(
-    //     new Vector3(5, 0, 0),
-    //     new Vector3(5, 1, 0),
-    //     new Vector3(5, 0, 1),
-    //   ), new SimpleMaterial(new Vector3(0, 1, 0), new Vector3(0, 0, 0))));
-    // scene.addPrimitive(new Primitive(
-    //   new Triangle(
-    //     new Vector3(5, 5, 0),
-    //     new Vector3(5, 6, 0),
-    //     new Vector3(5, 5, 2),
-    //   ), new SimpleMaterial(new Vector3(0, 0, 1), new Vector3(0, 0, 0))));
     
     let testBvh = new BVHTree();
     testBvh.parseScene(scene);
@@ -184,12 +156,6 @@ export class WebglRenderer {
 
 
   render(camera) {
-    // if (!camera.controler.renderer) {
-    //   console.log(camera.controler)
-    //   camera.controler.renderer = this;
-    // }
-    // camera.controler.update(1.0, 0.1);
-
 
     //运行光线跟踪着色器program
     this.gl.useProgram(this.traceProgram.program);
@@ -198,17 +164,10 @@ export class WebglRenderer {
     this.uTextureWeight.setData(this.sampleCount / ++this.sampleCount, DataType.uniform1f);
     this.uFocalDistance.setData(this.focalDistance, DataType.uniform1f);
 
-    console.log(camera);
     let eyePostion = new Float32Array([camera.position.x, camera.position.y, camera.position.z]);
-    // let projectionMatrix = new Float32Array(camera.projectionMatrix.clone().multiply(camera.matrixWorld).elements);
-    // let projectionMatrix = new Float32Array(camera.matrixWorld.clone().multiply(camera.projectionMatrix).elements);
     let projectionMatrix = new Float32Array(threeToMatrix(camera));
-    // console.log(camera.matrixWorld.clone().multiply(camera.projectionMatrix).elements);
-    // console.log(threeToMatrix(camera));
     this.uOrigin.setData(eyePostion, DataType.uniform3fv);
     this.uMatrix.setData(projectionMatrix, DataType.uniformMatrix4fv);
-    // this.uOrigin.setData(camera.eye, DataType.uniform3fv);
-    // this.uMatrix.setData(camera.matrix, DataType.uniformMatrix4fv);
 
     this.uTextureTrace.setData(0, DataType.uniform1i);
     this.utrianglesData.setData(1, DataType.uniform1i);

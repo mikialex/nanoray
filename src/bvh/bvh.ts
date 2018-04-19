@@ -29,24 +29,52 @@ export const singleTriangleDataWidth = 20;  // each triangle need 20 float
 export const PackedSingleTrianglePixelDataWidth = singleTriangleDataWidth / 4; // 5(rgba),using rgba, each triangle need 5 pixel
 export const dataRowWidthPixelTriangle = dataRowWidthTriangle * PackedSingleTrianglePixelDataWidth; // how many pixel in one row
 
+let tempTriangle = new Triangle();
+
+function getAABBMin(positionArray, index) {
+  let realIndex = index * 9;
+  return new Vector3(
+    Math.min(positionArray[realIndex], positionArray[realIndex + 3], positionArray[realIndex + 6]),
+    Math.min(positionArray[realIndex + 1], positionArray[realIndex + 4], positionArray[realIndex + 7]),
+    Math.min(positionArray[realIndex + 2], positionArray[realIndex + 5], positionArray[realIndex + 8]),
+  );
+}
+function getAABBMax(positionArray, index) {
+  let realIndex = index * 9;
+  return new Vector3(
+    Math.max(positionArray[realIndex], positionArray[realIndex + 3], positionArray[realIndex + 6]),
+    Math.max(positionArray[realIndex + 1], positionArray[realIndex + 4], positionArray[realIndex + 7]),
+    Math.max(positionArray[realIndex + 2], positionArray[realIndex + 5], positionArray[realIndex + 8]),
+  );
+}
+function getCenter(aabbMin: Vector3, aabbMax: Vector3) {
+  return new Vector3(
+    aabbMin.x + aabbMax.x,
+    aabbMin.y + aabbMax.y,
+    aabbMin.z + aabbMax.z,
+  ).multiScalar(0.5);
+}
+
 export class BVHTree {
   root: BVHNode;
   itemList: Raw[]
-  triangBVHList: Raw[] = [];
-  triangleList: Primitive[];
+  triangBVHList = [];
+  triposition: Primitive[];
   flattenList: number[] = [];
 
   parseScene(scene: Scene) {
     const list: Raw[] = [];
-    this.triangleList = scene.primitiveList;
-    scene.primitiveList.forEach((prim, index) => {
+    this.triposition = scene.position;
+    for (let i = 0; i < scene.position.length / 9; i++) {
+      let min = getAABBMin(scene.position, i);
+      let max = getAABBMax(scene.position, i);
       list.push({
-        aabbMin: prim.geometry.getAABBMin(),
-        aabbMax: prim.geometry.getAABBMax(),
-        center: prim.geometry.getCenter(),
-        id: index
+        aabbMin: min,
+        aabbMax: max,
+        center: getCenter(min , max),
+        id: i
       })
-    })
+    }
     this.itemList = list;
     console.log('parseScene', this.itemList);
   }
@@ -72,11 +100,20 @@ export class BVHTree {
 
       let start, end;
       if (!node.leftNode) {
-        start = tree.triangBVHList.length;
+        start = tree.triangBVHList.length / 9;
         node.itemList.forEach(tri => {
-          tree.triangBVHList.push(tri);
+          let index = tri.id * 9;
+          tree.triangBVHList.push(tree.triposition[index]);
+          tree.triangBVHList.push(tree.triposition[index + 1]);
+          tree.triangBVHList.push(tree.triposition[index + 2]);
+          tree.triangBVHList.push(tree.triposition[index + 3]);
+          tree.triangBVHList.push(tree.triposition[index + 4]);
+          tree.triangBVHList.push(tree.triposition[index + 5]);
+          tree.triangBVHList.push(tree.triposition[index + 6]);
+          tree.triangBVHList.push(tree.triposition[index + 7]);
+          tree.triangBVHList.push(tree.triposition[index + 8]);
         })
-        end = tree.triangBVHList.length;
+        end = tree.triangBVHList.length / 9;
       } else {
         start = 0;
         end = 0;
@@ -141,47 +178,76 @@ export class BVHTree {
 
   BVHTriangleToDataArray() {
     let array = [];
-    this.triangBVHList.forEach(triIndex => {
-      let tri  = (this.triangleList[triIndex.id].geometry as Triangle);
-      array.push(tri.p1.x);
-      array.push(tri.p1.y);
-      array.push(tri.p1.z);
+
+    for (let i = 0; i < this.triangBVHList.length / 9; i++) {
+      let realIndex = i;
+      array.push(this.triangBVHList[realIndex]);
+      array.push(this.triangBVHList[realIndex + 1]);
+      array.push(this.triangBVHList[realIndex + 2]);
       array.push(0);
 
-      array.push(tri.p2.x);
-      array.push(tri.p2.y);
-      array.push(tri.p2.z);
+      array.push(this.triangBVHList[realIndex + 3]);
+      array.push(this.triangBVHList[realIndex + 4]);
+      array.push(this.triangBVHList[realIndex + 5]);
       array.push(0);
 
-      array.push(tri.p3.x);
-      array.push(tri.p3.y);
-      array.push(tri.p3.z);
+      array.push(this.triangBVHList[realIndex + 6]);
+      array.push(this.triangBVHList[realIndex + 7]);
+      array.push(this.triangBVHList[realIndex + 8]);
       array.push(0);
-
-      // array.push(Math.random());
-      // array.push(0.6);
-      // array.push(1);
-      // array.push(0);
 
       array.push(0.8);
       array.push(0.8);
       array.push(0.8);
       array.push(0);
 
-      // if (Math.random() > 0.9) {
-      //   array.push(0.5);
-      //   array.push(0.5);
-      //   array.push(0.5);
-      //   array.push(0);
-      // } else {
-        array.push(0);
-        array.push(0);
-        array.push(0);
-        array.push(0);
-      // }
-    });
+      array.push(0);
+      array.push(0);
+      array.push(0);
+      array.push(0);
+    }
 
-    this.triangleNum = this.triangBVHList.length;
+    // this.triangBVHList.forEach(triIndex => {
+    //   let tri  = (this.triangleList[triIndex.id].geometry as Triangle);
+    //   array.push(tri.p1.x);
+    //   array.push(tri.p1.y);
+    //   array.push(tri.p1.z);
+    //   array.push(0);
+
+    //   array.push(tri.p2.x);
+    //   array.push(tri.p2.y);
+    //   array.push(tri.p2.z);
+    //   array.push(0);
+
+    //   array.push(tri.p3.x);
+    //   array.push(tri.p3.y);
+    //   array.push(tri.p3.z);
+    //   array.push(0);
+
+    //   // array.push(Math.random());
+    //   // array.push(0.6);
+    //   // array.push(1);
+    //   // array.push(0);
+
+    //   array.push(0.8);
+    //   array.push(0.8);
+    //   array.push(0.8);
+    //   array.push(0);
+
+    //   // if (Math.random() > 0.9) {
+    //   //   array.push(0.5);
+    //   //   array.push(0.5);
+    //   //   array.push(0.5);
+    //   //   array.push(0);
+    //   // } else {
+    //     array.push(0);
+    //     array.push(0);
+    //     array.push(0);
+    //     array.push(0);
+    //   // }
+    // });
+
+    this.triangleNum = this.triangBVHList.length / 9;
     this.triangleRowCount = Math.floor(this.triangleNum / dataRowWidthTriangle) + 1;
     this.triangleListLengthAll = this.triangleRowCount * PackedSingleTrianglePixelDataWidth * dataRowWidthTriangle;
 

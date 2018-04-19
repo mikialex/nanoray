@@ -13,8 +13,10 @@ precision highp int;
 const float POSITIVE_INFINITY = 1.0 / EPSILON;
 
 const vec3 bgcolor = vec3(0.8, 0.7, 0.6);
-const float width = 1280.0;
-const float height = 692.0;
+// const float width = 1280.0;
+// const float height = 692.0;
+const float width = 1000.0;
+const float height = 500.0;
 const float blurRadius = 0.01;
 
 uniform vec3 uOrigin;
