@@ -45,7 +45,7 @@ window.onload = function () {
 
   function animate() {
     if (isSampling) {
-      // threeRenderer.render(threeScene, threeCamera);
+      threeRenderer.render(threeScene, threeCamera);
       stats.begin();
       renderer.render(threeCamera);
       stats.end();

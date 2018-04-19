@@ -9,7 +9,7 @@ precision highp int;
 #endif
 
 #define EPSILON 0.00001
-#define FAR 10000.0
+#define FAR 5000.0
 
 const float POSITIVE_INFINITY = 1.0 / EPSILON;
 
@@ -190,19 +190,14 @@ float bvh_pass(float bvh_x, float bvh_y) {
 	return texture(bvhData, vec2(bvh_x + bvhStep * 2.0, bvh_y)).g;
 }
 
-float BvhBox_getIntersection(float bvh_x, float bvh_y, vec3 origin, vec3 delta) {
-    vec3 minPoint = vec3(
-        texture(bvhData, vec2(bvh_x, bvh_y)).r,
-        texture(bvhData, vec2(bvh_x, bvh_y)).g,
-        texture(bvhData, vec2(bvh_x, bvh_y)).b
-    );
+float BvhBox_getIntersection(float bvh_x, float bvh_y, vec3 origin, vec3 dir_reverse) {
+    vec3 minPoint = texture(bvhData, vec2(bvh_x, bvh_y)).rgb;
     vec3 maxPoint = vec3(
         texture(bvhData, vec2(bvh_x, bvh_y)).a,
-        texture(bvhData, vec2(bvh_x + bvhStep, bvh_y)).r,
-        texture(bvhData, vec2(bvh_x + bvhStep, bvh_y)).g
+        texture(bvhData, vec2(bvh_x + bvhStep, bvh_y)).rg
     );
-    vec3 t0 = (minPoint - origin) / delta;
-    vec3 t1 = (maxPoint - origin) / delta;
+    vec3 t0 = (minPoint - origin) * dir_reverse;
+    vec3 t1 = (maxPoint - origin) * dir_reverse;
     vec3 r0 = min(t0, t1);
     vec3 r1 = max(t0, t1);
     float tn = max(r0.x, max(r0.y, r0.z));
@@ -222,6 +217,8 @@ float BvhBox_getIntersection(float bvh_x, float bvh_y, vec3 origin, vec3 delta) 
 
 // index: index of nearest hit triangle
 float bvh_intersect(vec3 ray_o, vec3 ray_t, inout float index, inout vec3 debug) {
+    vec3 ray_t_reverse = vec3(1.0) / ray_t;
+
 	float depth = 1.0; // intersection distance//
 	float bvh_node = 0.0; // current visit nodes index
 	int t = 0;    // maybe use as intersection count
@@ -236,7 +233,7 @@ float bvh_intersect(vec3 ray_o, vec3 ray_t, inout float index, inout vec3 debug)
         x = fract(l);
         y = floor(l) * bvhHeightNodeNumReverse;
 		t += 1;
-        float cur_depth = BvhBox_getIntersection(x, y, ray_o, ray_t); //   bvh box intersect test
+        float cur_depth = BvhBox_getIntersection(x, y, ray_o, ray_t_reverse); //   bvh box intersect test
         
         if (cur_depth < 0.0 || cur_depth > depth) {
             bvh_node = bvh_pass(x, y);
