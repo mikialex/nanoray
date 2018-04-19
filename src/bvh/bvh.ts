@@ -17,7 +17,7 @@ export interface Raw {
   id: number;
 }
 
-export const maxDepth = 20;
+export const maxDepth = 50;
 
 export const dataRowWidthNode = 1000; // each row has how many node
 export const bvhSingleNodeDataWidth = 12;  // each bvhnode need 12 float
@@ -28,6 +28,8 @@ export const dataRowWidthTriangle = 500; // each row has how many triangle
 export const singleTriangleDataWidth = 20;  // each triangle need 20 float
 export const PackedSingleTrianglePixelDataWidth = singleTriangleDataWidth / 4; // 5(rgba),using rgba, each triangle need 5 pixel
 export const dataRowWidthPixelTriangle = dataRowWidthTriangle * PackedSingleTrianglePixelDataWidth; // how many pixel in one row
+
+declare var THREE;
 
 export class BVHTree {
   root: BVHNode;
@@ -54,6 +56,47 @@ export class BVHTree {
   buildBVH() {
     this.root = new BVHNode(this.itemList, 0, null, false);
     console.log('parsed root', this.root);
+  }
+
+  addHelperToScene(sceneToAdd) {
+    function addHelpBox(node: BVHNode, scene: any, left:boolean) {
+      
+      const x = node.aabbMax.x - node.aabbMin.x;
+      const y = node.aabbMax.y - node.aabbMin.y;
+      const z = node.aabbMax.z - node.aabbMin.z;
+      // if (x > 0.1 && y > 0.1 && z > 0.1 && node.leftNode === null) {
+      //   throw 'err'
+      // }
+
+      const cx = (node.aabbMax.x + node.aabbMin.x) / 2;
+      const cy = (node.aabbMax.y + node.aabbMin.y) / 2;
+      const cz = (node.aabbMax.z + node.aabbMin.z) / 2;
+
+      const box = new THREE.BoxGeometry(x, y, z);
+
+      let matLine = new THREE.MeshBasicMaterial({ color: 0x000000, wireframe: true });
+      
+      const matNormal = new THREE.MeshBasicMaterial({ color: 0x000000, opacity: 0.5, transparent: true });
+      let boxMesh;
+      // if (node.leftNode !== null) {
+      //   boxMesh = new THREE.Mesh(box, matLine);
+      // } else {
+      //   boxMesh = new THREE.Mesh(box, matLine);
+      //   scene.add(boxMesh);
+      // }
+      if (node.leftNode === null) {
+        boxMesh = new THREE.Mesh(box, matLine);
+        boxMesh.position.set(cx, cy, cz);
+        scene.add(boxMesh);
+      }
+      // scene.add(boxMesh);
+      
+      if (node.leftNode !== null) {
+        addHelpBox(node.leftNode, scene, true);
+        addHelpBox(node.rightNode, scene, false);
+      }
+    }
+    addHelpBox(this.root, sceneToAdd, true);
   }
 
 
@@ -158,27 +201,15 @@ export class BVHTree {
       array.push(tri.p3.z);
       array.push(0);
 
-      // array.push(Math.random());
-      // array.push(0.6);
-      // array.push(1);
-      // array.push(0);
-
       array.push(0.8);
       array.push(0.8);
       array.push(0.8);
       array.push(0);
 
-      // if (Math.random() > 0.9) {
-      //   array.push(0.5);
-      //   array.push(0.5);
-      //   array.push(0.5);
-      //   array.push(0);
-      // } else {
-        array.push(0);
-        array.push(0);
-        array.push(0);
-        array.push(0);
-      // }
+      array.push(0);
+      array.push(0);
+      array.push(0);
+      array.push(0);
     });
 
     this.triangleNum = this.triangBVHList.length;

@@ -31,9 +31,16 @@ export class BVHNode {
     }
     this.isSelfLeft = isLeft;
     if (this.itemList.length > 1 && this.depth < maxDepth) {
-      calBestPartition(this.itemList, this.splitAxis, this);
+      // calBestPartition(this.itemList, this.splitAxis, this);
+
+      sortByAxis(this.itemList, this.splitAxis);
+      this.bestLeftPart = this.itemList.slice(0, Math.floor(this.itemList.length / 2));
+      this.bestRightPart = this.itemList.slice(Math.floor(this.itemList.length / 2), this.itemList.length);
+
       this.leftNode = new BVHNode(this.bestLeftPart, this.depth + 1, this, true);
       this.rightNode = new BVHNode(this.bestRightPart, this.depth + 1, this, false);
+    } else {
+      let a = 1;
     }
   }
 

@@ -9,6 +9,7 @@ precision highp int;
 #endif
 
 #define EPSILON 0.00001
+#define FAR 10000.0
 
 const float POSITIVE_INFINITY = 1.0 / EPSILON;
 
@@ -230,6 +231,7 @@ float bvh_intersect(vec3 ray_o, vec3 ray_t, inout float index, inout vec3 debug)
     float y = 0.;
 
 	while ( bvh_node < {#bvhNodeNumber#}.0 ) {
+        debug++;
         l = bvh_node * 3. * bvhStep;
         x = fract(l);
         y = floor(l) * bvhHeightNodeNumReverse;
@@ -309,15 +311,15 @@ void main(void) {
     vec3 p = origin + normalize(delta) * uFocalDistance;
 
     origin = origin + up + right;
-    delta = normalize(p - origin) * 100.0;
+    delta = normalize(p - origin) * FAR;
 
-    float dist = 100.0;
+    float dist = FAR;
     vec3 color = vec3(0.0, 0.0, 0.0);
     vec3 reflectance = vec3(1.0, 1.0, 1.0);
     vec3 position, normal, diffuse, emittance;
     vec3 debug = vec3(0.0);
 
-    for (int depth = 0; depth < 2; ++depth) {
+    for (int depth = 0; depth < 3; ++depth) {
         if (intersect(origin, delta, position, normal, diffuse, emittance, debug)) {
             if (depth == 0) {
               dist = length(position - origin);
@@ -325,17 +327,18 @@ void main(void) {
             color += reflectance * emittance;
             reflectance *= diffuse;
             origin = position + normal * EPSILON;
-            // if(dot(normal, delta) > 0.0){
-            //     normal= normal * -1.0;
-            // }
             normal = cosineSampleHemisphere(seed, normal);
-            delta = normal * 100.0;
+            delta = normal * FAR;
         } else {
             color += reflectance * bgcolor;
             break;
         }
     }
     Finalcolor = vec4(mix(color, texture(uTexture, vTexCoords).rgb, uTextureWeight), dist);
+
+    // intersect(origin, delta, position, normal, diffuse, emittance, debug);
+    // Finalcolor = vec4(debug/700.0,1.);
+
     // Finalcolor=vec4(vec3(1.),1.);
     
     // Finalcolor = vec3(texture(bvhData, vec2(0.0 + bvhStep * 1.0 , 0.0)).r ) / 40.0;

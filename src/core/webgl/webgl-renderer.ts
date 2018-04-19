@@ -77,33 +77,16 @@ export class WebglRenderer {
   uTextureWeight
   uFocalDistance
 
-  prepare(obj) {
+  prepare(threeScene, obj) {
     let scene = new Scene();
     scene.loadFromThree(obj);
 
-    // scene.addPrimitive(new Primitive(
-    //   new Triangle(
-    //     new Vector3(0, 0, 0),
-    //     new Vector3(0.5, 1, 0),
-    //     new Vector3(0, 0, 1),
-    //   ), new SimpleMaterial(new Vector3(1, 0, 0), new Vector3(0, 0, 0))));
-    // scene.addPrimitive(new Primitive(
-    //   new Triangle(
-    //     new Vector3(5, 0, 0),
-    //     new Vector3(5, 1, 0),
-    //     new Vector3(5, 0, 1),
-    //   ), new SimpleMaterial(new Vector3(0, 1, 0), new Vector3(0, 0, 0))));
-    // scene.addPrimitive(new Primitive(
-    //   new Triangle(
-    //     new Vector3(5, 5, 0),
-    //     new Vector3(5, 6, 0),
-    //     new Vector3(5, 5, 2),
-    //   ), new SimpleMaterial(new Vector3(0, 0, 1), new Vector3(0, 0, 0))));
     
     let testBvh = new BVHTree();
     testBvh.parseScene(scene);
     testBvh.buildBVH();
     testBvh.generateFlattenList();
+    testBvh.addHelperToScene(threeScene);
 
     let tridataArray = testBvh.BVHTriangleToDataArray();
     console.log('triangle data in shader', tridataArray);

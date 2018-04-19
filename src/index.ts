@@ -15,7 +15,7 @@ window.onload = function () {
 
   var threeScene = new THREE.Scene();
   (window as any).scene = threeScene;
-  var threeCamera = new THREE.PerspectiveCamera(75, 500 / 250, 0.1, 100);
+  var threeCamera = new THREE.PerspectiveCamera(75, 500 / 250, 0.1, 10000);
   console.log(threeCamera);
   var threeControls = new THREE.OrbitControls(threeCamera);
   var threeRenderer = new THREE.WebGLRenderer({
@@ -45,7 +45,7 @@ window.onload = function () {
 
   function animate() {
     if (isSampling) {
-      threeRenderer.render(threeScene, threeCamera);
+      // threeRenderer.render(threeScene, threeCamera);
       stats.begin();
       renderer.render(threeCamera);
       stats.end();
@@ -76,7 +76,12 @@ window.onload = function () {
     getString((event.target as any).files[0]).then(objstr => {
       var loader = new THREE.OBJLoader();
       let obj = loader.parse(objstr);
-      renderer.prepare(obj);
+      // let obj = new THREE.Group();
+      // var geometry = new THREE.TorusBufferGeometry(10, 3, 16, 100);
+      // var material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+      // var mesh = new THREE.Mesh(geometry, material);
+      // obj.add(mesh);
+      renderer.prepare(threeScene, obj);
       threeScene.add(obj);
       animate();
     })
