@@ -14,6 +14,7 @@ window.onload = function () {
   // cameraControler.mount(document.querySelector('#canvas'));
 
   var threeScene = new THREE.Scene();
+  (window as any).scene = threeScene;
   var threeCamera = new THREE.PerspectiveCamera(75, 500 / 250, 0.1, 100);
   console.log(threeCamera);
   var threeControls = new THREE.OrbitControls(threeCamera);
@@ -73,9 +74,10 @@ window.onload = function () {
       });
     }
     getString((event.target as any).files[0]).then(objstr => {
-      renderer.prepare(objstr);
       var loader = new THREE.OBJLoader();
-      threeScene.add(loader.parse(objstr));
+      let obj = loader.parse(objstr);
+      renderer.prepare(obj);
+      threeScene.add(obj);
       animate();
     })
 

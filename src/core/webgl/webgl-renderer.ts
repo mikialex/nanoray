@@ -77,20 +77,9 @@ export class WebglRenderer {
   uTextureWeight
   uFocalDistance
 
-  prepare(objstr) {
+  prepare(obj) {
     let scene = new Scene();
-    ObjFileLoader.loadFromObjString(objstr, scene);
-    let dataArray = scene.toDataArray();
-    dataArray = dataArray.concat([
-      100, 0, 0, 0,
-      0, 100, 0, 0,
-      0, 0, 100, 0,
-      1, 1, 1, 1,
-      1, 1, 1, 1
-    ]);
-
-    var data = new Float32Array(dataArray);
-    console.log('scene', scene);
+    scene.loadFromThree(obj);
 
     // scene.addPrimitive(new Primitive(
     //   new Triangle(
@@ -198,7 +187,6 @@ export class WebglRenderer {
     this.uTextureWeight.setData(this.sampleCount / ++this.sampleCount, DataType.uniform1f);
     this.uFocalDistance.setData(this.focalDistance, DataType.uniform1f);
 
-    console.log(camera);
     let eyePostion = new Float32Array([camera.position.x, camera.position.y, camera.position.z]);
     // let projectionMatrix = new Float32Array(camera.projectionMatrix.clone().multiply(camera.matrixWorld).elements);
     // let projectionMatrix = new Float32Array(camera.matrixWorld.clone().multiply(camera.projectionMatrix).elements);

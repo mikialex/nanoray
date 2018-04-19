@@ -85,7 +85,7 @@ export function threeToMatrix(camera) {
   return matrix(
     [camera.position.x, camera.position.y, camera.position.z],
     [pLocal.x, pLocal.y, pLocal.z],
-    Math.PI * camera.fov / 180,
+    Math.PI * camera.fov / 270,
     camera.aspect,
     camera.near,
     camera.far,

@@ -17,7 +17,7 @@ export interface Raw {
   id: number;
 }
 
-export const maxDepth = 10;
+export const maxDepth = 20;
 
 export const dataRowWidthNode = 1000; // each row has how many node
 export const bvhSingleNodeDataWidth = 12;  // each bvhnode need 12 float

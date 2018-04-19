@@ -2,6 +2,7 @@ import { Primitive } from "./primitive";
 import { BoxGeometry } from "../geometry/box";
 import { SimpleMaterial } from "../material/simple-material";
 import { Triangle } from "../geometry/triangle";
+import { Vector3 } from "../math/vector3";
 
 export class Scene{
   constructor() {
@@ -52,4 +53,20 @@ export class Scene{
   //   })
   //   return result;
   // }
+
+  loadFromThree(threeObj) {
+    
+    threeObj.children.forEach(element => {
+      let position = element.geometry.attributes.position.array;
+      for (let i = 0; i < position.length / 9; i++) {
+        let index = 9 * i;
+        const tri = new Triangle(
+          new Vector3(position[index], position[index + 1], position[index + 2]).multiScalar(0.01),
+          new Vector3(position[index + 3], position[index + 4], position[index + 5]).multiScalar(0.01),
+          new Vector3(position[index + 6], position[index + 7], position[index + 8]).multiScalar(0.01));
+        const mat = new SimpleMaterial(new Vector3(Math.random(), 0.6, 1), new Vector3(0, 0, 0));
+        this.addPrimitive(new Primitive(tri, mat));
+      }
+    });
+  }
 }
