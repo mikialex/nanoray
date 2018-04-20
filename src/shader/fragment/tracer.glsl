@@ -92,7 +92,6 @@ Triangle getTriangle(float index) {
 float triangle_getIntersection( float index, vec3 orig, vec3 dir)
 {
     Triangle triangle = getTriangle(index);
-    const float INFINITY = 1e10;
     vec3 u, v, n; // triangle vectors
     vec3 w0, w;  // ray vectors
     float r, a, b; // params to calc ray-plane intersect
@@ -108,13 +107,13 @@ float triangle_getIntersection( float index, vec3 orig, vec3 dir)
     if (abs(b) < 1e-5)
     {
         // ray is parallel to triangle plane, and thus can never intersect.
-        return INFINITY;
+        return -1.0;
     }
 
     // get intersect point of ray with triangle plane
     r = a / b;
     if (r < 0.0)
-        return INFINITY; // ray goes away from triangle.
+        return -1.0; // ray goes away from triangle.
 
     vec3 I = orig + r * dir;
     float uu, uv, vv, wu, wv, D;
@@ -130,10 +129,10 @@ float triangle_getIntersection( float index, vec3 orig, vec3 dir)
     float s, t;
     s = (uv * wv - vv * wu) / D;
     if (s < 0.0 || s > 1.0)
-        return INFINITY;
+        return -1.0;
     t = (uv * wu - uu * wv) / D;
     if (t < 0.0 || (s + t) > 1.0)
-        return INFINITY;
+        return -1.0;
 
     return (r > 1e-5) ? r : -1.0;
 }
@@ -232,7 +231,7 @@ float bvh_intersect(vec3 ray_o, vec3 ray_t, inout float index, inout vec3 debug)
         y = (floor(l) + 0.5) * bvhHeightNodeNumReverse;
         float cur_depth = BvhBox_getIntersection(x, y, ray_o, ray_t_reverse); //   bvh box intersect test
         
-        if (cur_depth < 0.0 || cur_depth > depth) {
+        if (cur_depth < 0.0) {
             bvh_node = bvh_pass(x, y);
         } else {
             if(bvh_left(x, y) > 0.5){ // trunk

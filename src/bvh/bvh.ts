@@ -84,11 +84,11 @@ export class BVHTree {
       //   boxMesh = new THREE.Mesh(box, matLine);
       //   scene.add(boxMesh);
       // }
-      if (node.leftNode === null) {
-        boxMesh = new THREE.Mesh(box, matLine);
-        boxMesh.position.set(cx, cy, cz);
-        scene.add(boxMesh);
-      }
+      // if (node.leftNode === null) {
+      //   boxMesh = new THREE.Mesh(box, matLine);
+      //   boxMesh.position.set(cx, cy, cz);
+      //   scene.add(boxMesh);
+      // }
       // scene.add(boxMesh);
       
       if (node.leftNode !== null) {
@@ -185,7 +185,8 @@ export class BVHTree {
   BVHTriangleToDataArray() {
     let array = [];
     this.triangBVHList.forEach(triIndex => {
-      let tri  = (this.triangleList[triIndex.id].geometry as Triangle);
+      let tri = (this.triangleList[triIndex.id].geometry as Triangle);
+      let light = (this.triangleList[triIndex.id].material as any).lightness;
       array.push(tri.p1.x);
       array.push(tri.p1.y);
       array.push(tri.p1.z);
@@ -206,9 +207,9 @@ export class BVHTree {
       array.push(0.8);
       array.push(0);
 
-      array.push(0);
-      array.push(0);
-      array.push(0);
+      array.push(light.x);
+      array.push(light.y);
+      array.push(light.z);
       array.push(0);
     });
 

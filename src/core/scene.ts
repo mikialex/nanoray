@@ -68,5 +68,12 @@ export class Scene{
         this.addPrimitive(new Primitive(tri, mat));
       }
     });
+
+    const tri = new Triangle(
+      new Vector3(-100, 100, -100).multiScalar(0.1),
+      new Vector3(-100, 100, 100).multiScalar(0.1),
+      new Vector3(100, 100, -100).multiScalar(0.1));
+    const mat = new SimpleMaterial(new Vector3(Math.random(), 0.6, 1), new Vector3(10, 10, 10));
+    this.addPrimitive(new Primitive(tri, mat));
   }
 }
