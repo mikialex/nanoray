@@ -52,7 +52,7 @@ vec3 cosineSampleHemisphere(inout float seed, vec3 normal) {
 }
 
 const float triNum = {#triangleWidthNumber#}.0;
-const float sep = triNum * 5.0 - 0.001;
+const float sep = triNum * 5.0;
 const float u1 = 1.0 / sep;
 const float u2 = 2.0 / sep;
 const float u3 = 3.0 / sep;
@@ -75,9 +75,9 @@ Triangle getTriangle(float index) {
 
     // float u = index * u5;
 
-    float l = index * 5. * u1;
+    float l = (index * 5. + 0.5) * u1 ;
     float x = fract(l);
-    float y = floor(l) * triHeightNumberReverse;
+    float y = (floor(l) + 0.5) * triHeightNumberReverse;
 
     return Triangle(texture(trianglesData, vec2(x, y)).rgb,
                     texture(trianglesData, vec2(x + u1, y)).rgb,
@@ -205,12 +205,12 @@ float BvhBox_getIntersection(float bvh_x, float bvh_y, vec3 origin, vec3 dir_rev
     // return (tn <= tf) && (tf > EPSILON) ? tn : -1.0;
     if((tn <= tf) && (tn > EPSILON)){
         return tn;
-    } else{
-        if((EPSILON <= tf) && (tn < 0.0)){
-            return tf;
-        } else {
-            return -1.0;
-        }
+    }
+
+    if((EPSILON <= tf) && (tn < 0.0)){
+        return tf;
+    } else {
+        return -1.0;
     }
 }
 
@@ -220,19 +220,16 @@ float bvh_intersect(vec3 ray_o, vec3 ray_t, inout float index, inout vec3 debug)
     vec3 ray_t_reverse = vec3(1.0) / ray_t;
 
 	float depth = 1.0; // intersection distance//
-	float bvh_node = 0.0; // current visit nodes index
-	int t = 0;    // maybe use as intersection count
-
+	float bvh_node = bvhStep / 2.0; // current visit nodes index
     float l = 0.;
     float x = 0.;
     float y = 0.;
 
 	while ( bvh_node < {#bvhNodeNumber#}.0 ) {
         debug++;
-        l = bvh_node * 3. * bvhStep;
+        l = (bvh_node * 3. + 0.5) * bvhStep;
         x = fract(l);
-        y = floor(l) * bvhHeightNodeNumReverse;
-		t += 1;
+        y = (floor(l) + 0.5) * bvhHeightNodeNumReverse;
         float cur_depth = BvhBox_getIntersection(x, y, ray_o, ray_t_reverse); //   bvh box intersect test
         
         if (cur_depth < 0.0 || cur_depth > depth) {
@@ -241,13 +238,19 @@ float bvh_intersect(vec3 ray_o, vec3 ray_t, inout float index, inout vec3 debug)
             if(bvh_left(x, y) > 0.5){ // trunk
                 bvh_node ++;
             }else{ // leaf
-                for (float i = bvh_index_start(x, y); i < bvh_index_end(x, y); ++i) {
-                    cur_depth = triangle_getIntersection(i, ray_o, ray_t);
+                // for (float i = bvh_index_start(x, y); i < bvh_index_end(x, y); ++i) {
+                //     cur_depth = triangle_getIntersection(i, ray_o, ray_t);
+                //     if (cur_depth >= 0.0 && cur_depth < depth) {
+                //         index = i;
+                //         depth = cur_depth;
+                //     }
+                // }
+                float i = bvh_index_start(x, y);
+                cur_depth = triangle_getIntersection(i, ray_o, ray_t);
                     if (cur_depth >= 0.0 && cur_depth < depth) {
                         index = i;
                         depth = cur_depth;
                     }
-                }
                 bvh_node ++;
             }
         }
@@ -267,7 +270,6 @@ bool intersect(
 
     float hitResult = 1.0;
     float hitIndex = 0.0;
-    float t;
 
 
 
@@ -275,13 +277,11 @@ bool intersect(
     
 
     if (hitResult < 1.0) {
-        debug += vec3(1.0);
         Triangle triangle = getTriangle(hitIndex);
         position = origin + delta * hitResult;
         normal = triangle_getPointNormal(hitIndex, position);
         diffuse = triangle.rgb;
         emittance = triangle.lit;
-        // debug = emittance;
         return true;
     } else {
         return false;
@@ -300,14 +300,17 @@ void main(void) {
     vec3 delta = worldir.xyz / worldir.w;
     vec3 origin = uOrigin;
 
-    float r1 = rand(seed) * 6.283185307179586;
-    float r2 = rand(seed);
-    vec3 right = normalize(cross(vec3(0.0, 1.0, 0.0), delta));
-    vec3 up = normalize(cross(delta, right)) * sin(r1) * r2 * blurRadius;
-    right *= cos(r1) * r2 * blurRadius;
-    vec3 p = origin + normalize(delta) * uFocalDistance;
+    // // antialising
+    // float r1 = rand(seed) * 6.283185307179586;
+    // float r2 = rand(seed);
+    // vec3 right = normalize(cross(vec3(0.0, 1.0, 0.0), delta));
+    // vec3 up = normalize(cross(delta, right)) * sin(r1) * r2 * blurRadius;
+    // right *= cos(r1) * r2 * blurRadius;
+    // origin = origin + up + right;
 
-    origin = origin + up + right;
+    // vec3 p = origin + normalize(delta) * uFocalDistance;
+    vec3 p = origin + normalize(delta);
+
     delta = normalize(p - origin) * FAR;
 
     float dist = FAR;
@@ -331,6 +334,7 @@ void main(void) {
             break;
         }
     }
+
     Finalcolor = vec4(mix(color, texture(uTexture, vTexCoords).rgb, uTextureWeight), dist);
 
     // intersect(origin, delta, position, normal, diffuse, emittance, debug);
